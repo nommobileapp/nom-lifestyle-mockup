@@ -1,18 +1,703 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#10110f"><title>NOM Lifestyle — Interactive Mockup</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101010">
+<title>NOM — Journey Beyond</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-:root{--bg:#10110f;--panel:#191a17;--muted:#a4a59c;--text:#f7f6f0;--orange:#ff6a2a;--line:#30312b;--green:#b8e986}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:92px}button,input{font:inherit}button{cursor:pointer}.app{max-width:520px;margin:auto;min-height:100vh;background:linear-gradient(180deg,#171814 0,#10110f 46%)}header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 12px;position:sticky;top:0;background:#10110fee;backdrop-filter:blur(16px);z-index:5;border-bottom:1px solid #ffffff08}.brand{display:flex;align-items:center;gap:10px}.mark{width:36px;height:36px;border:2px solid var(--orange);border-radius:50%;display:grid;place-items:center;color:var(--orange);font-weight:900;font-size:18px;position:relative}.mark:after{content:"";position:absolute;width:7px;height:7px;background:var(--orange);border-radius:50%;right:-2px;top:2px}.brand strong{letter-spacing:4px;font-size:18px}.brand small{display:block;font-size:9px;color:var(--muted);letter-spacing:2.3px;margin-top:2px}.iconbtn{border:1px solid var(--line);background:#1b1c18;color:white;border-radius:50%;width:40px;height:40px;font-size:18px}.hero{padding:27px 20px 18px}.eyebrow{color:var(--orange);font-size:10px;letter-spacing:2.6px;font-weight:800}.hero h1{font-size:clamp(34px,9vw,48px);line-height:.99;letter-spacing:-2px;margin:12px 0 13px;font-weight:750}.hero h1 span{color:var(--orange)}.hero p{color:#b9b9af;line-height:1.55;font-size:13px;max-width:330px;margin:0 0 20px}.search{display:flex;gap:8px;padding:6px;background:#20211d;border:1px solid #373830;border-radius:15px}.search input{min-width:0;flex:1;border:0;outline:0;background:transparent;color:white;padding:10px;font-size:13px}.search button{border:0;border-radius:10px;background:var(--orange);color:#17100c;padding:0 16px;font-weight:800}.section{padding:13px 20px 7px}.sectionhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.section h2{font-size:18px;margin:0;letter-spacing:-.4px}.sub{font-size:11px;color:var(--muted);margin-top:5px}.textbtn{background:none;border:0;color:var(--orange);font-size:12px;font-weight:700}.categories{display:flex;gap:8px;overflow:auto;padding:0 20px 15px;scrollbar-width:none}.chip{white-space:nowrap;border:1px solid #3a3b34;border-radius:100px;background:#1b1c18;color:#c9c9c0;padding:10px 13px;font-size:12px}.chip.active{background:var(--orange);border-color:var(--orange);color:#1b100b;font-weight:800}.feature{margin:0 20px 18px;border-radius:20px;overflow:hidden;position:relative;height:205px;background:#292b23}.feature img{width:100%;height:100%;object-fit:cover;opacity:.78}.feature:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#090a08e8,transparent 75%)}.featurecopy{position:absolute;z-index:1;bottom:16px;left:17px;right:17px}.tag{font-size:9px;letter-spacing:1.5px;color:var(--green);font-weight:800}.feature h3{font-size:25px;margin:6px 0}.feature p{font-size:11px;color:#ddd;margin:0}.cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px 20px}.card{background:var(--panel);border:1px solid #2b2c26;border-radius:16px;overflow:hidden;min-width:0}.cardimg{height:125px;position:relative;background:#292b23}.cardimg img{width:100%;height:100%;object-fit:cover}.heart{position:absolute;right:9px;top:9px;border:0;background:#10110fc9;color:white;border-radius:50%;width:31px;height:31px;font-size:17px}.heart.saved{color:var(--orange)}.cardbody{padding:11px}.cardbody h3{font-size:13px;margin:0 0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.meta{font-size:10px;color:var(--muted);line-height:1.5}.rating{color:var(--green);font-size:11px;margin-top:7px}.pill{display:inline-block;color:var(--orange);font-size:9px;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}.bottomnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,520px);display:flex;justify-content:space-around;background:#151612f5;backdrop-filter:blur(20px);border-top:1px solid #33342c;padding:11px 8px calc(11px + env(safe-area-inset-bottom));z-index:6}.navitem{background:none;border:0;color:#85867d;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:52px}.navitem b{font-size:19px;font-weight:500}.navitem.active{color:var(--orange)}.toast{position:fixed;z-index:20;bottom:100px;left:50%;transform:translateX(-50%);background:#f4f0e7;color:#151510;padding:12px 16px;border-radius:12px;font-size:12px;box-shadow:0 8px 30px #0008;display:none;width:max-content;max-width:90%}.panel{margin:0 20px 20px;padding:17px;border:1px solid var(--line);background:#1a1b17;border-radius:17px}.panel h3{margin:0 0 8px}.panel p{font-size:12px;color:var(--muted);line-height:1.5}.panel input,.panel select{width:100%;background:#10110f;color:white;border:1px solid #3b3c34;border-radius:10px;padding:12px;margin:5px 0 12px}.primary{background:var(--orange);color:#1b100b;border:0;border-radius:11px;padding:12px 15px;font-weight:800;width:100%}.empty{padding:35px 20px;text-align:center;color:var(--muted);font-size:13px}.hidden{display:none!important}.feedpost{margin:0 20px 13px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel)}.feedpost img{width:100%;height:180px;object-fit:cover}.feedcaption{padding:13px;font-size:12px;color:#ddd}.feedcaption strong{color:white}.feedactions{display:flex;gap:15px;margin-top:10px}.feedactions button{background:none;border:0;color:#c9c9c0;padding:0;font-size:12px}
-</style></head><body><div class="app"><header><div class="brand"><div class="mark">N</div><div><strong>NOM</strong><small>JOURNEY BEYOND</small></div></div><button class="iconbtn" id="profileBtn" aria-label="Profile">◉</button></header><main id="main"></main><nav class="bottomnav"><button class="navitem active" data-page="home"><b>⌂</b>Home</button><button class="navitem" data-page="explore"><b>⌕</b>Explore</button><button class="navitem" data-page="social"><b>◎</b>Community</button><button class="navitem" data-page="saved"><b>♡</b>Saved</button><button class="navitem" data-page="trip"><b>✧</b>My trip</button></nav></div><div class="toast" id="toast"></div>
+:root {
+  --bg:#101010;
+  --panel:#1b1b1b;
+  --panel2:#242424;
+  --orange:#ff7a24;
+  --lime:#c8f45a;
+  --white:#f5f5f5;
+  --muted:#999;
+  --border:#303030;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--white);
+  font-family:Arial,Helvetica,sans-serif;
+  padding-bottom:90px;
+}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+header{
+  padding:22px 20px 12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.logo{
+  font-size:27px;
+  font-weight:900;
+  letter-spacing:4px;
+}
+.logo span{color:var(--orange)}
+.header-right{color:var(--muted);font-size:12px}
+main{padding:10px 18px;max-width:760px;margin:auto}
+h1{font-size:29px;line-height:1.15;margin:10px 0}
+h2{font-size:21px;margin:25px 0 14px}
+h3{margin:8px 0}
+p{color:var(--muted);line-height:1.5}
+.eyebrow{
+  color:var(--orange);
+  font-size:11px;
+  font-weight:bold;
+  letter-spacing:2px;
+}
+.hero{
+  background:linear-gradient(135deg,#292019,#171717 65%);
+  border:1px solid #493020;
+  border-radius:22px;
+  padding:27px 22px;
+  margin:12px 0 25px;
+}
+.hero h1{font-size:34px;max-width:300px}
+.hero p{max-width:300px}
+.tagline{color:var(--lime);font-size:12px;letter-spacing:1px}
+.primary{
+  background:var(--orange);
+  color:#111;
+  border:0;
+  border-radius:30px;
+  padding:12px 19px;
+  font-weight:bold;
+}
+.secondary{
+  background:var(--panel2);
+  color:var(--white);
+  border:1px solid var(--border);
+  border-radius:30px;
+  padding:11px 17px;
+}
+.text-button{
+  border:0;background:none;color:var(--orange);padding:8px 0;
+}
+.search{
+  width:100%;
+  padding:14px 16px;
+  background:var(--panel);
+  color:white;
+  border:1px solid var(--border);
+  border-radius:14px;
+  margin:8px 0 15px;
+}
+.categories{
+  display:flex;
+  gap:9px;
+  overflow-x:auto;
+  padding:4px 0 12px;
+}
+.category{
+  white-space:nowrap;
+  padding:10px 15px;
+  border-radius:25px;
+  border:1px solid var(--border);
+  background:var(--panel);
+  color:var(--white);
+}
+.category.active{background:var(--lime);color:#111;border-color:var(--lime)}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.place{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:17px;
+  overflow:hidden;
+}
+.place-image{
+  height:125px;
+  background:linear-gradient(135deg,#4b3425,#1e2926);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:38px;
+}
+.place-content{padding:12px}
+.place-content p{font-size:12px;margin:5px 0}
+.place-meta{color:var(--lime);font-size:11px}
+.save-button{
+  background:transparent;
+  color:var(--orange);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:7px 11px;
+  margin-top:9px;
+}
+.feed-card,.panel{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:17px;
+  padding:17px;
+  margin:12px 0;
+}
+.feed-card p{margin-bottom:8px}
+.form-card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:20px;
+  margin:15px 0;
+}
+.form-card input,.form-card textarea{
+  width:100%;
+  background:#111;
+  color:white;
+  border:1px solid var(--border);
+  border-radius:11px;
+  padding:13px;
+  margin:7px 0 13px;
+}
+.form-card label{font-size:12px;color:var(--muted)}
+.form-card button{margin:8px 5px 5px 0}
+.message{font-size:13px;min-height:20px;color:var(--lime)}
+.bottom-nav{
+  position:fixed;
+  z-index:10;
+  bottom:0;left:0;right:0;
+  background:#171717;
+  border-top:1px solid var(--border);
+  display:flex;
+  justify-content:space-around;
+  padding:11px 3px calc(11px + env(safe-area-inset-bottom));
+}
+.nav-item{
+  background:none;
+  border:0;
+  color:var(--muted);
+  font-size:10px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:5px;
+}
+.nav-item span{font-size:19px}
+.nav-item.active{color:var(--orange)}
+.hidden{display:none!important}
+.small{font-size:12px;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--border);margin:18px 0}
+@media(max-width:380px){
+  .cards{grid-template-columns:1fr}
+  .hero h1{font-size:29px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">N<span>O</span>M</div>
+  <div class="header-right" id="accountStatus">JOURNEY BEYOND</div>
+</header>
+
+<main>
+
+<section id="homePage">
+  <div class="hero">
+    <div class="eyebrow">WELCOME TO NOM</div>
+    <h1>Discover a life beyond the ordinary.</h1>
+    <p>Find places, meet people and create your own journey.</p>
+    <div class="tagline">YOUR DREAM. YOUR JOURNEY. YOUR LIFESTYLE.</div>
+    <br>
+    <button class="primary" onclick="showPage('explore')">Explore NOM</button>
+  </div>
+
+  <h2>Discover your next journey</h2>
+  <input class="search" id="homeSearch" placeholder="Search places, experiences..." oninput="searchPlaces(this.value)">
+  <div class="categories">
+    <button class="category active" onclick="filterPlaces('All',this)">All</button>
+    <button class="category" onclick="filterPlaces('Nature',this)">Nature</button>
+    <button class="category" onclick="filterPlaces('Food',this)">Food</button>
+    <button class="category" onclick="filterPlaces('Beach',this)">Beach</button>
+    <button class="category" onclick="filterPlaces('Culture',this)">Culture</button>
+  </div>
+  <div class="cards" id="homePlaces"></div>
+
+  <h2>Live the NOM lifestyle</h2>
+  <div class="feed-card">
+    <div class="eyebrow">COMMUNITY</div>
+    <h3>More than a destination.</h3>
+    <p>Connect with travellers, share experiences and discover opportunities around the world.</p>
+    <button class="secondary" onclick="showPage('community')">Discover Community</button>
+  </div>
+</section>
+
+<section id="explorePage" class="hidden">
+  <div class="eyebrow">EXPLORE</div>
+  <h1>Find your next destination.</h1>
+  <input class="search" placeholder="Search places..." oninput="searchPlaces(this.value)">
+  <div class="categories">
+    <button class="category active" onclick="filterPlaces('All',this)">All</button>
+    <button class="category" onclick="filterPlaces('Nature',this)">Nature</button>
+    <button class="category" onclick="filterPlaces('Food',this)">Food</button>
+    <button class="category" onclick="filterPlaces('Beach',this)">Beach</button>
+    <button class="category" onclick="filterPlaces('Culture',this)">Culture</button>
+  </div>
+  <div class="cards" id="explorePlaces"></div>
+</section>
+
+<section id="communityPage" class="hidden">
+  <div class="eyebrow">NOM COMMUNITY</div>
+  <h1>Stories without borders.</h1>
+  <p>A place to connect, share and inspire.</p>
+  <div class="feed-card">
+    <h3>Welcome to NOM Community</h3>
+    <p>Share your journey, meet fellow nomads and discover new perspectives.</p>
+    <p class="small">Community posting will be connected to user accounts in a later development step.</p>
+  </div>
+  <div class="feed-card">
+    <div class="eyebrow">NOM WORK</div>
+    <h3>Work. Travel. Live.</h3>
+    <p>Discover opportunities, offer your skills and connect with people around the world.</p>
+    <span class="small">Jobs and services marketplace — coming soon.</span>
+  </div>
+</section>
+
+<section id="savedPage" class="hidden">
+  <div class="eyebrow">YOUR COLLECTION</div>
+  <h1>Saved places.</h1>
+  <p>Your favourite discoveries in one place.</p>
+  <div class="cards" id="savedPlaces"></div>
+</section>
+
+<section id="tripPage" class="hidden">
+  <div class="eyebrow">YOUR JOURNEY</div>
+  <h1>My Trip Planner</h1>
+  <p>Start building your next adventure.</p>
+  <div class="form-card">
+    <label>Trip destination</label>
+    <input id="tripDestination" placeholder="Where do you want to go?">
+    <label>Travel dates</label>
+    <input id="tripDates" placeholder="e.g. 10–20 December">
+    <label>Notes</label>
+    <textarea id="tripNotes" rows="3" placeholder="Your plans and ideas..."></textarea>
+    <button class="primary" onclick="saveTrip()">Save trip</button>
+    <div class="message" id="tripMessage"></div>
+  </div>
+  <div id="tripList"></div>
+</section>
+
+<section id="profilePage" class="hidden">
+  <div class="eyebrow">YOUR NOM ACCOUNT</div>
+  <h1>My Profile</h1>
+  <div class="panel" id="profileInfo">
+    <p>You are browsing NOM as a guest.</p>
+    <button class="primary" onclick="showAuth('signup')">Create account</button>
+    <button class="secondary" onclick="showAuth('login')">Log in</button>
+  </div>
+
+  <div class="form-card hidden" id="authCard">
+    <h2 id="authTitle">Create your account</h2>
+    <p id="authDescription">Join the NOM community.</p>
+
+    <div id="signupFields">
+      <label>Display name</label>
+      <input id="displayName" autocomplete="name" placeholder="Your name">
+      <label>Username</label>
+      <input id="username" autocomplete="username" placeholder="Choose a username">
+    </div>
+
+    <label>Email address</label>
+    <input id="email" type="email" autocomplete="email" placeholder="you@example.com">
+
+    <label>Password</label>
+    <input id="password" type="password" autocomplete="current-password" placeholder="At least 6 characters">
+
+    <button class="primary" id="authSubmit" onclick="submitAuth()">Create account</button>
+    <button class="text-button" id="authSwitch" onclick="switchAuth()">Already have an account? Log in</button>
+    <div class="message" id="authMessage"></div>
+    <hr>
+    <button class="text-button" onclick="hideAuth()">Cancel</button>
+  </div>
+
+  <div class="panel hidden" id="loggedInPanel">
+    <h3 id="loggedInName">NOM Member</h3>
+    <p id="loggedInEmail"></p>
+    <p class="small">Your account is connected to NOM.</p>
+    <button class="secondary" onclick="logout()">Log out</button>
+    <div class="message" id="logoutMessage"></div>
+  </div>
+</section>
+
+</main>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" data-page="home" onclick="showPage('home')"><span>⌂</span>Home</button>
+  <button class="nav-item" data-page="explore" onclick="showPage('explore')"><span>⌕</span>Explore</button>
+  <button class="nav-item" data-page="community" onclick="showPage('community')"><span>◎</span>Community</button>
+  <button class="nav-item" data-page="saved" onclick="showPage('saved')"><span>♡</span>Saved</button>
+  <button class="nav-item" data-page="trip" onclick="showPage('trip')"><span>✈</span>My Trip</button>
+</nav>
+
 <script>
-const places=[
-{id:1,name:'Kelingking Beach',city:'Nusa Penida, Bali',category:'nature',rating:'4.9',price:'Free to visit',img:'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=85',desc:'Dramatic cliffs and turquoise water.'},
-{id:2,name:'Tropical Brunch Club',city:'Canggu, Bali',category:'cafe',rating:'4.8',price:'IDR 80k–150k',img:'https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&w=800&q=85',desc:'Slow mornings, good coffee, bright plates.'},
-{id:3,name:'Ubud Green Escape',city:'Ubud, Bali',category:'nature',rating:'4.7',price:'From IDR 50k',img:'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?auto=format&fit=crop&w=800&q=85',desc:'A quiet green escape in the highlands.'},
-{id:4,name:'Sundown Social',city:'Seminyak, Bali',category:'bar',rating:'4.6',price:'IDR 100k–250k',img:'https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=800&q=85',desc:'Cocktails and golden-hour energy.'},
-{id:5,name:'Warung Sari',city:'Ubud, Bali',category:'food',rating:'4.8',price:'IDR 25k–70k',img:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=85',desc:'Local flavours with fresh ingredients.'},
-{id:6,name:'Coastal Hideaway',city:'Uluwatu, Bali',category:'stay',rating:'4.9',price:'From IDR 900k/night',img:'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=85',desc:'A slow stay with ocean views.'}
-];let page='home',category='all',query='',saved=new Set(),likes=new Set(),trip=[];
-const main=document.getElementById('main');function toast(s){let t=document.getElementById('toast');t.textContent=s;t.style.display='block';setTimeout(()=>t.style.display='none',2300)}function card(p){return `<article class="card"><div class="cardimg"><img src="${p.img}" alt="${p.name}" loading="lazy"><button class="heart ${saved.has(p.id)?'saved':''}" onclick="toggleSave(${p.id})">${saved.has(p.id)?'♥':'♡'}</button></div><div class="cardbody"><div class="pill">${p.category}</div><h3>${p.name}</h3><div class="meta">⌖ ${p.city}<br>${p.price}</div><div class="rating">★ ${p.rating} <span style="color:#8c8d83"> · Mock rating</span></div><button class="textbtn" style="padding:10px 0 0" onclick="details(${p.id})">Explore place ↗</button></div></article>`}function filtered(){return places.filter(p=>(category==='all'||p.category===category)&&(`${p.name} ${p.city} ${p.category}`.toLowerCase().includes(query.toLowerCase())))}function head(title,sub){return `<div class="sectionhead"><div><h2>${title}</h2><div class="sub">${sub}</div></div></div>`}function categorybar(){return `<div class="categories">${[['all','✦ For you'],['food','🍜 Food'],['cafe','☕ Cafes'],['bar','🍸 Bars'],['nature','🌿 Nature'],['stay','🛏 Stays']].map(([v,l])=>`<button class="chip ${category===v?'active':''}" onclick="setCategory('${v}')">${l}</button>`).join('')}</div>`}function home(){return `<section class="hero"><div class="eyebrow">YOUR WORLD, UNLOCKED</div><h1>Journey<br><span>Beyond.</span></h1><p>Find your next favourite place. Discover local gems, share your moments, and make every journey count.</p><div class="search"><input id="searchInput" placeholder="Search places, food, cities…" value="${query.replace(/"/g,'&quot;')}"><button onclick="runSearch()">Explore ↗</button></div></section><div class="feature"><img src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1200&q=85" alt="Bali tropical coast"><div class="featurecopy"><div class="tag">✦ NOM SPOTLIGHT · INDONESIA</div><h3>Bali, beyond the usual.</h3><p>Hidden corners. Local flavour. Your kind of journey.</p></div></div><section class="section">${head('Discover your vibe','A little inspiration for the next adventure')}</section>${categorybar()}<section class="section">${head(query?'Search results':'Trending around Bali',`${filtered().length} places to explore`)}</section><div class="cards">${filtered().map(card).join('')||'<div class="empty">No matches yet. Try another search.</div>'}</div>`}function explore(){return `<section class="hero"><div class="eyebrow">EXPLORE MORE</div><h1>Find your<br><span>somewhere.</span></h1><p>Search the places, tastes, and experiences that make a destination yours.</p><div class="search"><input id="searchInput" placeholder="Try “cafe in Ubud”" value="${query.replace(/"/g,'&quot;')}"><button onclick="runSearch()">Search</button></div></section>${categorybar()}<section class="section">${head('Places for you','Demo listings — live data not connected yet')}</section><div class="cards">${filtered().map(card).join('')||'<div class="empty">No places found.</div>'}</div><div class="panel"><h3>Map preview</h3><p>Interactive map integration is planned. This mockup uses place cards so you can test discovery without a map API key.</p><button class="primary" onclick="toast('Map integration is planned for the next build.')">Preview map feature</button></div>`}function social(){return `<section class="hero"><div class="eyebrow">NOM COMMUNITY</div><h1>Stories from<br><span>out there.</span></h1><p>Share the places you love and get inspired by the NOM community.</p><button class="primary" onclick="toast('Photo upload will connect to the backend in a later build.')">＋ Create a post</button></section><section class="section">${head('Community highlights','Sample posts for the mockup')}</section><article class="feedpost"><img src="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1000&q=85" alt="Ocean view"><div class="feedcaption"><strong>@nomad.days</strong> Found a quiet corner of the coast. This is your reminder to take the scenic route.<div class="feedactions"><button onclick="like(1)">${likes.has(1)?'♥':'♡'} ${likes.has(1)?'Liked':'Like'}</button><button onclick="toast('Comments are a planned feature.')">◯ Comment</button><button onclick="toast('Share link will be available when published.')">↗ Share</button></div></div></article><article class="feedpost"><img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1000&q=85" alt="Coffee"><div class="feedcaption"><strong>@coffee.and.miles</strong> Good coffee, no plans, and a whole new city to wander.<div class="feedactions"><button onclick="like(2)">${likes.has(2)?'♥':'♡'} ${likes.has(2)?'Liked':'Like'}</button><button onclick="toast('Comments are a planned feature.')">◯ Comment</button><button onclick="toast('Share link will be available when published.')">↗ Share</button></div></div></article>`}function savedPage(){let ps=places.filter(p=>saved.has(p.id));return `<section class="hero"><div class="eyebrow">YOUR COLLECTION</div><h1>Places to<br><span>come back to.</span></h1><p>Save places here as you explore.</p></section><section class="section">${head('Your saved places',`${ps.length} saved`)}</section><div class="cards">${ps.map(card).join('')||'<div class="empty" style="grid-column:1/-1">Nothing saved yet.<br>Tap the ♡ on any place card to keep it here.</div>'}</div>`}function tripPage(){return `<section class="hero"><div class="eyebrow">TRAVEL PLANNER</div><h1>Make room<br>for <span>wonder.</span></h1><p>Start a simple trip plan and collect the places you want to visit.</p></section><div class="panel"><h3>Plan a journey</h3><label class="meta">Destination</label><input id="dest" placeholder="e.g. Bali, Indonesia" value="Bali, Indonesia"><label class="meta">Total budget (IDR)</label><input id="budget" type="number" placeholder="e.g. 3000000" value="3000000"><label class="meta">Trip length</label><select id="days"><option>2 days</option><option selected>3 days</option><option>5 days</option><option>7 days</option></select><button class="primary" onclick="makeTrip()">Create my trip ✦</button></div><section class="section">${head('Your trip shortlist',`${trip.length} places added`)}</section><div class="cards">${trip.map(id=>places.find(p=>p.id===id)).filter(Boolean).map(card).join('')||'<div class="empty" style="grid-column:1/-1">Your trip shortlist will appear here.</div>'}</div><div class="section"><button class="textbtn" onclick="addTripOptions()">＋ Add suggested places</button></div>`}function profile(){return `<section class="hero"><div class="eyebrow">YOUR NOM PROFILE</div><h1>Your life.<br><span>Your journey.</span></h1><p>This is a preview of your account area. Real sign-in is not connected in this mockup.</p></section><div class="panel"><h3>Welcome to NOM</h3><p>When authentication is connected, your profile, posts, and saved places will sync to your account.</p><label class="meta">Email address (demo only)</label><input placeholder="you@example.com" type="email"><button class="primary" onclick="toast('Authentication is not connected in this mockup.')">Continue</button></div><div class="panel"><h3>Prototype status</h3><p>Clickable UI: working · Search and filters: working · Saved places: working in this session · Live database, login, uploads, and booking: not connected.</p></div>`}function render(){document.querySelectorAll('.navitem').forEach(b=>b.classList.toggle('active',b.dataset.page===page));main.innerHTML=page==='home'?home():page==='explore'?explore():page==='social'?social():page==='saved'?savedPage():page==='trip'?tripPage():profile();let si=document.getElementById('searchInput');if(si)si.addEventListener('keydown',e=>{if(e.key==='Enter')runSearch()})}function setCategory(c){category=c;render()}function runSearch(){query=(document.getElementById('searchInput')?.value||'').trim();page='explore';render()}function toggleSave(id){saved.has(id)?saved.delete(id):saved.add(id);toast(saved.has(id)?'Saved to your collection ♥':'Removed from saved places');render()}function details(id){let p=places.find(x=>x.id===id);toast(`${p.name} · ${p.city} — demo place details`)}function like(id){likes.has(id)?likes.delete(id):likes.add(id);render()}function makeTrip(){let d=document.getElementById('dest').value||'your destination',b=Number(document.getElementById('budget').value||0),days=document.getElementById('days').value;trip=[1,2,5];toast(`Trip draft for ${d}: ${days}, budget IDR ${b.toLocaleString('en-US')}. Demo only.`);render()}function addTripOptions(){trip=[...new Set([...trip,1,2,3,5])];toast('Suggested places added to your shortlist');render()}document.querySelectorAll('.navitem').forEach(b=>b.addEventListener('click',()=>{page=b.dataset.page;query='';category='all';render();window.scrollTo({top:0,behavior:'smooth'})}));document.getElementById('profileBtn').addEventListener('click',()=>{page='profile';render();window.scrollTo({top:0,behavior:'smooth'})});render();
-</script></body></html>
+/* NOM SUPABASE CONNECTION */
+const SUPABASE_URL = "https://ojzzroswtzjnnoigjpuc.supabase.co";
+const SUPABASE_KEY = "sb_publishable_xc8mdZ1eb8XtEyxtn3tfXg_DnqNNfjI";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+let currentUser = null;
+let authMode = "signup";
+let selectedCategory = "All";
+
+/* DEMO PLACES — these are local sample listings */
+const places = [
+  {id:1,name:"Uluwatu",location:"South Bali",category:"Beach",icon:"🌊",description:"Cliffs, ocean views and beautiful sunsets."},
+  {id:2,name:"Ubud",location:"Central Bali",category:"Culture",icon:"🌿",description:"Art, rice terraces and Balinese culture."},
+  {id:3,name:"Mount Batur",location:"Kintamani",category:"Nature",icon:"🌋",description:"A memorable sunrise mountain experience."},
+  {id:4,name:"Canggu Cafes",location:"Canggu",category:"Food",icon:"☕",description:"Coffee, food and a creative lifestyle."},
+  {id:5,name:"Nusa Penida",location:"Bali",category:"Beach",icon:"🏝️",description:"Island scenery and spectacular coastlines."},
+  {id:6,name:"Tegallalang",location:"Ubud",category:"Nature",icon:"🌾",description:"Famous green rice terraces."}
+];
+
+let savedIds = JSON.parse(localStorage.getItem("nomSaved") || "[]");
+let trips = JSON.parse(localStorage.getItem("nomTrips") || "[]");
+
+/* NAVIGATION */
+function showPage(page){
+  document.querySelectorAll("main section").forEach(section=>{
+    section.classList.add("hidden");
+  });
+
+  const target = document.getElementById(page + "Page");
+  if(target) target.classList.remove("hidden");
+
+  document.querySelectorAll(".nav-item").forEach(button=>{
+    button.classList.toggle("active",button.dataset.page === page);
+  });
+
+  if(page === "saved") renderSaved();
+  if(page === "trip") renderTrips();
+  if(page === "profile") updateProfile();
+  window.scrollTo(0,0);
+}
+
+/* PLACE CARDS */
+function placeCard(place){
+  const isSaved = savedIds.includes(place.id);
+
+  return `
+    <article class="place">
+      <div class="place-image">${place.icon}</div>
+      <div class="place-content">
+        <div class="place-meta">${place.category.toUpperCase()}</div>
+        <h3>${place.name}</h3>
+        <p>${place.description}</p>
+        <p class="small">${place.location}</p>
+        <button class="save-button" onclick="toggleSave(${place.id})">
+          ${isSaved ? "♥ Saved" : "♡ Save place"}
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+function renderPlaces(list=places){
+  const html = list.map(placeCard).join("");
+  document.getElementById("homePlaces").innerHTML = html;
+  document.getElementById("explorePlaces").innerHTML = html;
+}
+
+function filterPlaces(category,button){
+  selectedCategory = category;
+
+  document.querySelectorAll(".category").forEach(item=>{
+    item.classList.remove("active");
+  });
+  if(button) button.classList.add("active");
+
+  const filtered = category === "All"
+    ? places
+    : places.filter(place=>place.category === category);
+
+  renderPlaces(filtered);
+}
+
+function searchPlaces(query){
+  const value = query.toLowerCase().trim();
+
+  const filtered = places.filter(place=>{
+    const matchesCategory = selectedCategory === "All" ||
+      place.category === selectedCategory;
+
+    const matchesSearch =
+      place.name.toLowerCase().includes(value) ||
+      place.location.toLowerCase().includes(value) ||
+      place.category.toLowerCase().includes(value);
+
+    return matchesCategory && matchesSearch;
+  });
+
+  renderPlaces(filtered);
+}
+
+function toggleSave(id){
+  if(savedIds.includes(id)){
+    savedIds = savedIds.filter(item=>item !== id);
+  }else{
+    savedIds.push(id);
+  }
+
+  localStorage.setItem("nomSaved",JSON.stringify(savedIds));
+  renderPlaces();
+  renderSaved();
+}
+
+function renderSaved(){
+  const list = places.filter(place=>savedIds.includes(place.id));
+  document.getElementById("savedPlaces").innerHTML = list.length
+    ? list.map(placeCard).join("")
+    : '<p>No saved places yet. Explore NOM and save somewhere you love.</p>';
+}
+
+/* TRIP PLANNER */
+function saveTrip(){
+  const destination = document.getElementById("tripDestination").value.trim();
+  const dates = document.getElementById("tripDates").value.trim();
+  const notes = document.getElementById("tripNotes").value.trim();
+
+  if(!destination){
+    document.getElementById("tripMessage").textContent = "Please enter a destination.";
+    return;
+  }
+
+  trips.push({
+    id:Date.now(),
+    destination,
+    dates,
+    notes
+  });
+
+  localStorage.setItem("nomTrips",JSON.stringify(trips));
+
+  document.getElementById("tripDestination").value = "";
+  document.getElementById("tripDates").value = "";
+  document.getElementById("tripNotes").value = "";
+  document.getElementById("tripMessage").textContent = "Trip saved on this device.";
+
+  renderTrips();
+}
+
+function renderTrips(){
+  const container = document.getElementById("tripList");
+
+  if(!trips.length){
+    container.innerHTML = "<p>No trips planned yet.</p>";
+    return;
+  }
+
+  container.innerHTML = trips.map(trip=>`
+    <div class="feed-card">
+      <h3>${escapeHTML(trip.destination)}</h3>
+      <p>${escapeHTML(trip.dates || "Dates not set")}</p>
+      <p>${escapeHTML(trip.notes || "")}</p>
+      <button class="text-button" onclick="deleteTrip(${trip.id})">Remove trip</button>
+    </div>
+  `).join("");
+}
+
+function deleteTrip(id){
+  trips = trips.filter(trip=>trip.id !== id);
+  localStorage.setItem("nomTrips",JSON.stringify(trips));
+  renderTrips();
+}
+
+function escapeHTML(value){
+  return String(value).replace(/[&<>"']/g,char=>({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#039;"
+  })[char]);
+}
+
+/* AUTHENTICATION */
+function showAuth(mode){
+  authMode = mode;
+  document.getElementById("authCard").classList.remove("hidden");
+  document.getElementById("authMessage").textContent = "";
+  updateAuthForm();
+}
+
+function hideAuth(){
+  document.getElementById("authCard").classList.add("hidden");
+}
+
+function switchAuth(){
+  authMode = authMode === "signup" ? "login" : "signup";
+  document.getElementById("authMessage").textContent = "";
+  updateAuthForm();
+}
+
+function updateAuthForm(){
+  const signup = authMode === "signup";
+
+  document.getElementById("authTitle").textContent =
+    signup ? "Create your account" : "Welcome back";
+
+  document.getElementById("authDescription").textContent =
+    signup ? "Join the NOM community." : "Log in to continue your journey.";
+
+  document.getElementById("signupFields").classList.toggle("hidden",!signup);
+
+  document.getElementById("authSubmit").textContent =
+    signup ? "Create account" : "Log in";
+
+  document.getElementById("authSwitch").textContent =
+    signup ? "Already have an account? Log in" : "New to NOM? Create an account";
+}
+
+async function submitAuth(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const message = document.getElementById("authMessage");
+
+  message.textContent = "";
+
+  if(!email || !password){
+    message.textContent = "Please enter your email and password.";
+    return;
+  }
+
+  if(password.length < 6){
+    message.textContent = "Password must be at least 6 characters.";
+    return;
+  }
+
+  const submitButton = document.getElementById("authSubmit");
+  submitButton.disabled = true;
+  submitButton.textContent = "Please wait...";
+
+  try{
+    if(authMode === "signup"){
+      const displayName = document.getElementById("displayName").value.trim();
+      const username = document.getElementById("username").value.trim();
+
+      if(!displayName || !username){
+        message.textContent = "Please enter your name and username.";
+        return;
+      }
+
+      const {data,error} = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options:{
+          emailRedirectTo:"https://nommobileapp.github.io/nom-lifestyle-mockup/",
+          data:{
+            display_name:displayName,
+            username:username
+          }
+        }
+      });
+
+      if(error) throw error;
+
+      if(data.session){
+        currentUser = data.user;
+        message.textContent = "Account created successfully.";
+        updateProfile();
+      }else{
+        message.textContent = "Registration received. Please check your email to confirm your account.";
+      }
+
+    }else{
+      const {data,error} = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if(error) throw error;
+
+      currentUser = data.user;
+      message.textContent = "Login successful.";
+      updateProfile();
+    }
+
+  }catch(error){
+    message.textContent = error.message || "Something went wrong. Please try again.";
+  }finally{
+    submitButton.disabled = false;
+    updateAuthForm();
+  }
+}
+
+function updateProfile(){
+  const profileInfo = document.getElementById("profileInfo");
+  const loggedInPanel = document.getElementById("loggedInPanel");
+  const accountStatus = document.getElementById("accountStatus");
+
+  if(currentUser){
+    profileInfo.classList.add("hidden");
+    loggedInPanel.classList.remove("hidden");
+
+    const metadata = currentUser.user_metadata || {};
+    document.getElementById("loggedInName").textContent =
+      metadata.display_name || metadata.username || "NOM Member";
+
+    document.getElementById("loggedInEmail").textContent =
+      currentUser.email || "";
+
+    accountStatus.textContent = "NOM MEMBER";
+    hideAuth();
+  }else{
+    profileInfo.classList.remove("hidden");
+    loggedInPanel.classList.add("hidden");
+    accountStatus.textContent = "JOURNEY BEYOND";
+  }
+}
+
+async function logout(){
+  const message = document.getElementById("logoutMessage");
+
+  try{
+    const {error} = await supabaseClient.auth.signOut();
+    if(error) throw error;
+
+    currentUser = null;
+    updateProfile();
+    message.textContent = "You have logged out.";
+  }catch(error){
+    message.textContent = error.message || "Unable to log out.";
+  }
+}
+
+/* RESTORE LOGIN SESSION */
+async function initialiseApp(){
+  try{
+    const {data,error} = await supabaseClient.auth.getSession();
+    if(error) throw error;
+
+    currentUser = data.session ? data.session.user : null;
+    updateProfile();
+
+    supabaseClient.auth.onAuthStateChange((_event,session)=>{
+      currentUser = session ? session.user : null;
+      updateProfile();
+    });
+
+  }catch(error){
+    console.error("NOM authentication:",error.message);
+  }
+}
+
+/* START NOM */
+renderPlaces();
+renderSaved();
+renderTrips();
+initialiseApp();
+</script>
+
+</body>
+</html>
