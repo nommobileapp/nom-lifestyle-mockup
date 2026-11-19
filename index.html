@@ -393,10 +393,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 const SUPABASE_URL = "https://ojzzroswtzjnnoigjpuc.supabase.co";
 const SUPABASE_KEY = "sb_publishable_xc8mdZ1eb8XtEyxtn3tfXg_DnqNNfjI";
 
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
+const supabaseClient = window.supabase?.createClient
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  : null;
 
 let currentUser = null;
 let authMode = "signup";
@@ -546,11 +545,17 @@ async function searchPlaces(query){
 
   searchDebounce = setTimeout(async ()=>{
     const [localResult, remoteResult, communityResult] = await Promise.all([
-      supabaseClient.rpc("search_places",{search_text:value,category_filter:selectedCategory}),
+      supabaseClient
+        ? supabaseClient.rpc("search_places",{search_text:value,category_filter:selectedCategory})
+            .catch(error=>({data:[],error}))
+        : Promise.resolve({data:[],error:new Error("Supabase client unavailable")}),
       fetch(`${SUPABASE_URL}/functions/v1/nom-place-search?q=${encodeURIComponent(value)}&category=${encodeURIComponent(selectedCategory)}&limit=30`,{headers:{apikey:SUPABASE_KEY}})
         .then(async response=>{if(!response.ok)throw new Error("External place search unavailable");return response.json();})
         .catch(error=>{console.warn("NOM external place search:",error.message);return {places:[]};}),
-      supabaseClient.from("community_posts").select("id,title,description,location,category,photo_urls,user_id,username,display_name").eq("status","published").limit(50)
+      supabaseClient
+        ? supabaseClient.from("community_posts").select("id,title,description,location,category,photo_urls,user_id,username,display_name").eq("status","published").limit(50)
+            .then(result=>result).catch(error=>({data:[],error}))
+        : Promise.resolve({data:[],error:new Error("Supabase client unavailable")})
     ]);
 
     if(requestId !== searchRequestId) return;
@@ -926,6 +931,10 @@ async function logout(){
 
 /* RESTORE LOGIN SESSION */
 async function initialiseApp(){
+  if(!supabaseClient){
+    console.error("NOM: Supabase SDK did not load; public navigation remains available.");
+    return;
+  }
   try{
     const {data,error} = await supabaseClient.auth.getSession();
     if(error) throw error;
