@@ -442,7 +442,7 @@ function placeCard(place){
 
 function hasPlaceImage(place){
   const image = place.image_url || place.image || "";
-  return typeof image === "string" && /^https?:\\/\\//i.test(image.trim());
+  return typeof image === "string" && (image.trim().startsWith("https://") || image.trim().startsWith("http://"));
 }
 
 function renderPlaces(list=currentResults){
