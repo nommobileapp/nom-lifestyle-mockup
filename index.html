@@ -7,6 +7,8 @@
 <meta name="theme-color" content="#101010">
 <title>NOM — Journey Beyond</title>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -222,6 +224,10 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 .community-post .post-meta{font-size:11px;color:var(--lime);margin:9px 0 4px}
 .community-post .post-author{font-size:12px;color:var(--orange)}
 .community-post .post-status{font-size:11px;color:var(--lime);margin-top:8px}
+.explore-view-toggle{display:flex;gap:8px;margin:12px 0}.explore-view-toggle button{flex:1}
+#nomExploreMap{height:min(68vh,620px);min-height:380px;width:100%;border:1px solid var(--border);border-radius:17px;overflow:hidden;background:#171717;z-index:1}
+.nom-map-marker{width:18px;height:18px;border-radius:50%;background:var(--orange);border:3px solid #fff;box-shadow:0 2px 10px #0009}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#1b1b1b;color:#f5f5f5}.leaflet-popup-content{margin:11px 14px}.nom-map-popup strong{display:block;margin-bottom:4px}.nom-map-popup button{margin-top:8px;background:var(--orange);color:#111;border:0;border-radius:18px;padding:7px 12px;font-weight:bold}
 @media(max-width:380px){
   .cards{grid-template-columns:1fr}
   .hero h1{font-size:29px}
@@ -285,8 +291,13 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   <div style="display:flex;align-items:center;gap:9px;margin:8px 0 12px">
     <button class="category active" id="photosOnlyButton" type="button" aria-pressed="true" onclick="togglePhotosOnly()">📷 Photos only: ON</button>
   </div>
+  <div class="explore-view-toggle" aria-label="Explore display">
+    <button class="category active" id="explorePhotosTab" type="button" onclick="toggleExploreView('photos')">▦ Photos</button>
+    <button class="category" id="exploreMapTab" type="button" onclick="toggleExploreView('map')">⌖ Map</button>
+  </div>
   <div class="message" id="placesMessage"></div>
   <div class="cards" id="explorePlaces"></div>
+  <div id="nomExploreMap" class="hidden" aria-label="Map of discovered places"></div>
   <p class="small" style="margin-top:14px">Place data: © OpenStreetMap contributors · Powered by <a href="https://www.geoapify.com/" target="_blank" rel="noopener" style="color:var(--orange)">Geoapify</a>.</p>
 </section>
 
@@ -408,6 +419,9 @@ let places = [];
 const nomDetailItems = Object.create(null);
 let currentResults = [];
 let searchRequestId = 0;
+let exploreView = "photos";
+let nomMap = null;
+let nomMapMarkers = [];
 
 let savedIds = JSON.parse(localStorage.getItem("nomSaved") || "[]");
 let trips = JSON.parse(localStorage.getItem("nomTrips") || "[]");
@@ -516,6 +530,41 @@ function renderPlaces(list=currentResults){
     : '<p class="small">No places found. Try another search or category.</p>');
   document.getElementById("homePlaces").innerHTML = empty;
   document.getElementById("explorePlaces").innerHTML = empty;
+  updateNomMapMarkers(visibleList);
+}
+
+function toggleExploreView(view){
+  exploreView=view;
+  const photos=document.getElementById("explorePhotosTab"),map=document.getElementById("exploreMapTab");
+  const cards=document.getElementById("explorePlaces"),mapEl=document.getElementById("nomExploreMap");
+  cards.classList.toggle("hidden",view==="map");
+  mapEl.classList.toggle("hidden",view!=="map");
+  photos.classList.toggle("active",view==="photos");map.classList.toggle("active",view==="map");
+  photos.setAttribute("aria-pressed",String(view==="photos"));map.setAttribute("aria-pressed",String(view==="map"));
+  if(view==="map"){
+    initialiseNomMap();
+    setTimeout(()=>{if(nomMap){nomMap.invalidateSize();updateNomMapMarkers(photosOnly?currentResults.filter(hasPlaceImage):currentResults);}},80);
+  }
+}
+
+function initialiseNomMap(){
+  if(nomMap || !window.L)return;
+  nomMap=L.map("nomExploreMap",{zoomControl:true,scrollWheelZoom:false}).setView([-8.4095,115.1889],9);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · © <a href="https://carto.com/attributions">CARTO</a>',subdomains:"abcd",maxZoom:20}).addTo(nomMap);
+}
+
+function updateNomMapMarkers(list){
+  if(!nomMap)return;
+  nomMapMarkers.forEach(marker=>marker.remove());nomMapMarkers=[];
+  const located=list.filter(place=>Number.isFinite(Number(place.latitude??place.lat))&&Number.isFinite(Number(place.longitude??place.lon)));
+  located.forEach(place=>{
+    const lat=Number(place.latitude??place.lat),lon=Number(place.longitude??place.lon);
+    if(Math.abs(lat)>90||Math.abs(lon)>180)return;
+    const marker=L.marker([lat,lon],{icon:L.divIcon({className:"",html:'<div class="nom-map-marker"></div>',iconSize:[18,18],iconAnchor:[9,9]})}).addTo(nomMap);
+    marker.bindPopup('<div class="nom-map-popup"><strong>'+escapeHTML(place.name||"NOM discovery")+'</strong><span>'+escapeHTML(place.location||place.category||"")+'</span><br><button type="button" onclick="openPlaceDetail(\''+escapeHTML(String(place.id))+'\')">View place</button></div>');
+    nomMapMarkers.push(marker);
+  });
+  if(nomMapMarkers.length){const group=L.featureGroup(nomMapMarkers);nomMap.fitBounds(group.getBounds().pad(.18),{maxZoom:13});}
 }
 
 function togglePhotosOnly(){
