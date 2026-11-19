@@ -332,10 +332,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   </div>
 
   <div class="panel hidden" id="loggedInPanel">
-    <h3 id="loggedInName">NOM Member</h3>
-    <p class="small" id="loggedInUsername"></p>
-    <p id="loggedInEmail"></p>
-    <p class="small">Your account is connected to NOM.</p>
+    <h3 id="loggedInName">@username</h3>
+    <p class="small">Your NOM account</p>
     <button class="secondary" onclick="logout()">Log out</button>
     <div class="message" id="logoutMessage"></div>
   </div>
@@ -657,16 +655,9 @@ function updateProfile(){
     loggedInPanel.classList.remove("hidden");
 
     const metadata = currentUser.user_metadata || {};
-    document.getElementById("loggedInName").textContent =
-      metadata.display_name || metadata.username || "NOM Member";
-
-    document.getElementById("loggedInUsername").textContent =
-      metadata.username ? "@" + metadata.username : "";
-
-    document.getElementById("loggedInEmail").textContent =
-      currentUser.email || "";
-
-    accountStatus.textContent = metadata.username ? "@" + metadata.username : "NOM MEMBER";
+    const publicUsername = metadata.username ? "@" + metadata.username : "NOM MEMBER";
+    document.getElementById("loggedInName").textContent = publicUsername;
+    accountStatus.textContent = publicUsername;
     hideAuth();
   }else{
     profileInfo.classList.remove("hidden");
