@@ -447,7 +447,7 @@ function openPlaceDetail(id){
  const photos=(item.photos||[]).filter(Boolean);
  const gallery=photos.length?'<div class="detail-gallery">'+photos.map(url=>'<img src="'+escapeHTML(url)+'" alt="'+escapeHTML(item.name)+'" loading="lazy">').join('')+'</div>':'';
  const rating=item.rating?'★ '+item.rating:'';
- const save=item.kind==='place'?'<button class="primary" onclick="toggleSave(\\''+escapeHTML(String(item.id))+'\\');closePlaceDetail()">♡ Save this place</button>':'';
+ const save=item.kind==='place'?'<button class="primary" data-place-id="'+escapeHTML(String(item.id))+'" onclick="toggleSave(this.dataset.placeId);closePlaceDetail()">♡ Save this place</button>':'';
  const credit=item.attribution?'<p class="detail-credit">Photo: '+escapeHTML(item.attribution)+' · '+escapeHTML(item.license||'Licence details unavailable')+'</p>':'';
  document.getElementById('placeDetailBody').innerHTML=gallery+'<div class="detail-copy"><div class="eyebrow">'+escapeHTML((item.category||'DISCOVERY').toUpperCase())+(rating?' · '+escapeHTML(rating):'')+'</div><h1>'+escapeHTML(item.name)+'</h1><div class="detail-location">'+escapeHTML(item.location||'')+(item.price?' · '+escapeHTML(item.price):'')+'</div><p class="detail-description">'+escapeHTML(item.description||'')+'</p>'+(item.author?'<p class="small">Shared by '+escapeHTML(item.author)+'</p>':'')+save+credit+'</div>';
  const overlay=document.getElementById('placeDetailOverlay');
