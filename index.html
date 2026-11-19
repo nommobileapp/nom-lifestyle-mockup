@@ -420,6 +420,9 @@ function placeCard(place){
   const isSaved = savedIds.includes(place.id);
   const image = place.image_url || place.image || "";
   const rating = place.rating ? "★ " + place.rating : "";
+  const photoCredit = place.image_attribution
+    ? `<p class="small photo-credit">Photo: ${escapeHTML(place.image_attribution)} · ${escapeHTML(place.image_license || "Licence details unavailable")}${place.image_source_url ? ` · <a href="${escapeHTML(place.image_source_url)}" target="_blank" rel="noopener" style="color:var(--orange)">Source</a>` : ""}</p>`
+    : "";
 
   return `
     <article class="place">
@@ -427,6 +430,7 @@ function placeCard(place){
         ${image ? `<img src="${escapeHTML(image)}" alt="${escapeHTML(place.name)}" loading="lazy">` : `<div style="height:100%;display:grid;place-items:center;color:var(--lime);font-size:12px;letter-spacing:2px">NOM DISCOVERY</div>`}
         ${rating ? `<span class="place-rating">${rating}</span>` : ""}
       </div>
+      ${photoCredit}
       <div class="place-content">
         <div class="place-meta">${escapeHTML(place.category.toUpperCase())}</div>
         <h3>${escapeHTML(place.name)}</h3>
@@ -511,13 +515,26 @@ async function searchPlaces(query){
       price:null
     }));
 
-    currentResults = [...new Map(
-      [...localPlaces,...externalPlaces].map(place=>[String(place.source_id || place.id),place])
-    ).values()];
+    function mergePlaceRecords(records){
+      const merged = new Map();
+      records.forEach(place=>{
+        const key = String(place.source_id || place.id);
+        const previous = merged.get(key) || {};
+        merged.set(key,{
+          ...previous,
+          ...place,
+          image_url:place.image_url || previous.image_url || null,
+          image_attribution:place.image_attribution || previous.image_attribution || null,
+          image_license:place.image_license || previous.image_license || null,
+          image_source_url:place.image_source_url || previous.image_source_url || null
+        });
+      });
+      return [...merged.values()];
+    }
 
-    places = [...new Map(
-      [...places,...currentResults].map(place=>[String(place.source_id || place.id),place])
-    ).values()];
+    // Local NOM records are applied last, preserving cached photos during live searches.
+    currentResults = mergePlaceRecords([...externalPlaces,...localPlaces]);
+    places = mergePlaceRecords([...places,...currentResults]);
 
     renderPlaces(currentResults);
     renderSaved();
@@ -566,7 +583,7 @@ async function importBaliPlaces(){
     const result = await response.json();
     if(!response.ok) throw new Error(result.error || "Import failed");
 
-    message.textContent = `${result.imported} Bali places saved to the NOM database. Search to explore them.`;
+    message.textContent = `${result.imported} Bali places saved. ${result.photos_found || 0} have verified Commons photos with credits and licence details.`;
     await searchPlaces(document.getElementById("exploreSearch")?.value || "");
   }catch(error){
     message.textContent = error.message || "Could not import places. Please try again.";
