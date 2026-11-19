@@ -201,10 +201,12 @@ p{color:var(--muted);line-height:1.5}
   padding:11px 3px calc(11px + env(safe-area-inset-bottom));
 }
 .nav-item{
+  flex:1;
+  min-width:0;
   background:none;
   border:0;
   color:var(--muted);
-  font-size:10px;
+  font-size:9px;
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -222,6 +224,23 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 .community-post .post-meta{font-size:11px;color:var(--lime);margin:9px 0 4px}
 .community-post .post-author{font-size:12px;color:var(--orange)}
 .community-post .post-status{font-size:11px;color:var(--lime);margin-top:8px}
+.work-subnav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:18px 0}
+.work-view-button{background:var(--panel2);border:1px solid var(--border);border-radius:10px;color:var(--muted);padding:10px 4px;font-size:10px;font-weight:bold}
+.work-view-button.active{background:#34251c;border-color:#704323;color:var(--orange)}
+.work-search,.work-form input,.work-form textarea,.work-form select{width:100%;background:#111;color:white;border:1px solid var(--border);border-radius:11px;padding:13px;margin:7px 0 13px}
+.work-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:15px;margin:12px 0}
+.work-card h3{font-size:17px;margin:5px 0 8px}
+.work-card p{font-size:13px;margin:8px 0}
+.work-meta{font-size:11px;color:var(--lime);line-height:1.6}
+.work-owner{font-size:12px;color:var(--orange);margin-top:10px}
+.work-tags{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0}
+.work-tag{font-size:10px;background:#292929;border:1px solid var(--border);border-radius:20px;padding:5px 8px;color:#ddd}
+.work-apply{display:inline-block;background:var(--orange);color:#171717;text-decoration:none;font-size:12px;font-weight:bold;padding:10px 13px;border-radius:10px;margin-top:8px}
+.work-empty{background:var(--panel);border:1px dashed var(--border);border-radius:14px;padding:18px;text-align:center;color:var(--muted);font-size:13px}
+.work-form label{font-size:12px;color:var(--muted)}
+.work-form button{margin:8px 5px 5px 0}
+.work-section-title{margin-top:18px}
+@media(max-width:380px){.work-subnav{gap:4px}.work-view-button{font-size:9px;padding:9px 2px}}
 @media(max-width:380px){
   .cards{grid-template-columns:1fr}
   .hero h1{font-size:29px}
@@ -313,6 +332,72 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     <p>Discover opportunities, offer your skills and connect with people around the world.</p><span class="small">Jobs and services marketplace — coming soon.</span></div>
 </section>
 
+<section id="workPage" class="hidden">
+  <div class="eyebrow">NOM WORK</div>
+  <h1>Work. Travel. Live.</h1>
+  <p>Find opportunities, meet creative people and showcase what you can do — wherever your journey takes you.</p>
+  <div class="work-subnav">
+    <button class="work-view-button active" data-work-view="listings" onclick="setWorkView('listings')">Find work</button>
+    <button class="work-view-button" data-work-view="talent" onclick="setWorkView('talent')">Find talent</button>
+    <button class="work-view-button" data-work-view="profile" onclick="setWorkView('profile')">My portfolio</button>
+    <button class="work-view-button" data-work-view="post" onclick="setWorkView('post')">Post work</button>
+  </div>
+
+  <div id="workListingsView">
+    <h2 class="work-section-title">Opportunities for NOM members</h2>
+    <input class="work-search" id="workSearch" placeholder="Search jobs, skills or destinations..." oninput="renderWorkListings()">
+    <select class="work-search" id="workTypeFilter" onchange="renderWorkListings()">
+      <option value="all">All opportunities</option>
+      <option value="job">Jobs</option>
+      <option value="gig">Freelance & gigs</option>
+      <option value="service">Services</option>
+      <option value="collaboration">Creative collaborations</option>
+    </select>
+    <div id="workListings"><div class="work-empty">Loading NOM opportunities...</div></div>
+  </div>
+
+  <div id="workTalentView" class="hidden">
+    <h2 class="work-section-title">Discover NOM talent</h2>
+    <input class="work-search" id="talentSearch" placeholder="Search creatives, skills or location..." oninput="renderWorkTalent()">
+    <div id="workTalent"><div class="work-empty">Loading member portfolios...</div></div>
+  </div>
+
+  <div id="workProfileView" class="hidden">
+    <h2 class="work-section-title">Your professional identity</h2>
+    <p class="small">Create a portfolio that helps other NOM members discover your skills and work.</p>
+    <div class="work-form">
+      <label for="workHeadline">Professional headline</label><input id="workHeadline" maxlength="140" placeholder="e.g. Travel photographer & filmmaker">
+      <label for="workBio">About you</label><textarea id="workBio" rows="4" maxlength="2000" placeholder="Tell the NOM community what you do and what makes your work unique."></textarea>
+      <label for="workSkills">Skills (separate with commas)</label><input id="workSkills" placeholder="Photography, editing, design, writing...">
+      <label for="workPortfolioUrl">Portfolio link</label><input id="workPortfolioUrl" type="url" placeholder="https://yourportfolio.com">
+      <label for="workAvailability">Availability</label><select id="workAvailability"><option value="open">Available for work</option><option value="selective">Open to the right opportunity</option><option value="unavailable">Not currently available</option></select>
+      <label for="workLocation">Current base / preferred location</label><input id="workLocation" maxlength="160" placeholder="e.g. Bali, Indonesia / Remote">
+      <button class="primary" type="button" onclick="saveWorkProfile()">Save my portfolio</button>
+      <div class="message" id="workProfileMessage"></div>
+    </div>
+    <h2>My opportunities</h2><div id="myWorkListings"><div class="work-empty">Your listings will appear here.</div></div>
+  </div>
+
+  <div id="workPostView" class="hidden">
+    <h2 class="work-section-title">Share an opportunity</h2>
+    <p class="small">Post a job, freelance gig, service or creative collaboration for NOM members.</p>
+    <div class="work-form">
+      <label for="workListingType">What are you posting?</label><select id="workListingType"><option value="job">Job opportunity</option><option value="gig">Freelance / short-term gig</option><option value="service">Service offered</option><option value="collaboration">Creative collaboration</option></select>
+      <label for="workListingTitle">Title</label><input id="workListingTitle" maxlength="120" placeholder="e.g. Looking for a travel photographer">
+      <label for="workListingDescription">Description</label><textarea id="workListingDescription" rows="5" maxlength="5000" placeholder="Describe the opportunity, skills needed, responsibilities or service you offer."></textarea>
+      <label for="workListingLocation">Location</label><input id="workListingLocation" maxlength="160" placeholder="e.g. Canggu, Bali / Remote">
+      <label for="workListingMode">Work arrangement</label><select id="workListingMode"><option value="flexible">Flexible</option><option value="on-site">On-site</option><option value="hybrid">Hybrid</option><option value="remote">Remote</option></select>
+      <label for="workListingCategory">Industry / category</label><input id="workListingCategory" maxlength="80" placeholder="e.g. Photography, Hospitality, Design">
+      <label for="workListingCompensation">Pay / compensation (optional)</label><input id="workListingCompensation" maxlength="120" placeholder="e.g. IDR 1,500,000 per project / Negotiable">
+      <label for="workListingEmail">Contact email</label><input id="workListingEmail" type="email" placeholder="name@example.com">
+      <label for="workListingUrl">Application / portfolio link (optional)</label><input id="workListingUrl" type="url" placeholder="https://...">
+      <button class="primary" type="button" onclick="submitWorkListing()">Publish opportunity</button>
+      <div class="message" id="workListingMessage"></div>
+      <p class="small">Listings are visible to registered NOM members. Only post genuine opportunities and never request payment from applicants.</p>
+    </div>
+  </div>
+</section>
+
 <section id="savedPage" class="hidden">
   <div class="eyebrow">YOUR COLLECTION</div>
   <h1>Saved places.</h1>
@@ -383,6 +468,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 <nav class="bottom-nav">
   <button class="nav-item active" data-page="home" onclick="showPage('home')"><span>⌂</span>Home</button>
   <button class="nav-item" data-page="explore" onclick="showPage('explore')"><span>⌕</span>Explore</button>
+  <button class="nav-item" data-page="work" onclick="openWork()"><span>✦</span>Work</button>
   <button class="nav-item" data-page="community" onclick="showPage('community')"><span>◎</span>Community</button>
   <button class="nav-item" data-page="saved" onclick="showPage('saved')"><span>♡</span>Saved</button>
   <button class="nav-item" data-page="trip" onclick="showPage('trip')"><span>✈</span>My Trip</button>
@@ -413,6 +499,13 @@ let trips = JSON.parse(localStorage.getItem("nomTrips") || "[]");
 
 /* NAVIGATION */
 function showPage(page){
+  if(page === "work" && !currentUser){
+    pendingWorkAccess = true;
+    showPage("profile");
+    showAuth("signup");
+    document.getElementById("authMessage").textContent = "Create your free NOM member account or log in to access NOM Work.";
+    return;
+  }
   document.querySelectorAll("main section").forEach(section=>{
     section.classList.add("hidden");
   });
@@ -428,7 +521,206 @@ function showPage(page){
   if(page === "trip") renderTrips();
   if(page === "profile") updateProfile();
   if(page === "community") loadCommunityFeed();
+  if(page === "work") loadWorkMarket();
   window.scrollTo(0,0);
+}
+
+/* NOM WORK — member-only jobs, gigs and creative portfolios */
+let pendingWorkAccess = false;
+let workListingsCache = [];
+let workProfilesCache = [];
+let activeWorkView = "listings";
+
+async function openWork(){
+  pendingWorkAccess = true;
+  if(!supabaseClient){
+    showPage("profile");
+    showAuth("signup");
+    document.getElementById("authMessage").textContent = "NOM sign-in is temporarily unavailable. Please try again shortly.";
+    return;
+  }
+  try{
+    const {data:{session},error} = await supabaseClient.auth.getSession();
+    if(error) throw error;
+    currentUser = session ? session.user : null;
+  }catch(error){
+    currentUser = null;
+  }
+  if(currentUser){
+    pendingWorkAccess = false;
+    showPage("work");
+  }else{
+    showPage("profile");
+    showAuth("signup");
+    document.getElementById("authMessage").textContent = "Join NOM or log in first to access jobs, portfolios and member opportunities.";
+  }
+}
+
+function setWorkView(view){
+  if(!currentUser){openWork();return;}
+  activeWorkView = view;
+  ["listings","talent","profile","post"].forEach(name=>{
+    const panel=document.getElementById("work"+name.charAt(0).toUpperCase()+name.slice(1)+"View");
+    if(panel) panel.classList.toggle("hidden",name!==view);
+  });
+  document.querySelectorAll("[data-work-view]").forEach(button=>{
+    button.classList.toggle("active",button.dataset.workView===view);
+  });
+  if(view==="listings") loadWorkListings();
+  if(view==="talent") loadWorkProfiles();
+  if(view==="profile"){loadOwnWorkProfile();loadMyWorkListings();}
+}
+
+async function loadWorkMarket(){
+  if(!currentUser) return;
+  await Promise.all([loadWorkListings(),loadWorkProfiles()]);
+}
+
+async function loadWorkListings(){
+  const target=document.getElementById("workListings");
+  if(!target||!currentUser)return;
+  target.innerHTML='<div class="work-empty">Finding opportunities...</div>';
+  const {data,error}=await supabaseClient.from("work_listings")
+    .select("id,user_id,listing_type,title,description,location,work_mode,category,compensation,contact_email,application_url,member_name,member_username,created_at,status")
+    .eq("status","published").order("created_at",{ascending:false}).limit(100);
+  if(error){target.innerHTML='<div class="work-empty">NOM Work is temporarily unavailable. Please try again.</div>';return;}
+  workListingsCache=data||[];
+  renderWorkListings();
+}
+
+function safeWorkUrl(value){
+  const raw=String(value||"").trim();
+  if(!raw)return "";
+  try{const url=new URL(raw);return url.protocol==="https:"||url.protocol==="http:"?url.href:"";}catch(error){return "";}
+}
+
+function workListingCard(item,own){
+  const typeLabels={job:"JOB",gig:"FREELANCE / GIG",service:"SERVICE",collaboration:"COLLABORATION"};
+  const contact=item.application_url?safeWorkUrl(item.application_url):(item.contact_email?"mailto:"+encodeURIComponent(item.contact_email):"");
+  const action=contact?'<a class="work-apply" href="'+escapeHTML(contact)+'" '+(contact.startsWith("http")?'target="_blank" rel="noopener"':'')+'>Contact / Apply</a>':'';
+  return '<article class="work-card"><div class="work-meta">'+escapeHTML(typeLabels[item.listing_type]||"OPPORTUNITY")+' · '+escapeHTML(item.location||"Location flexible")+' · '+escapeHTML(item.work_mode||"Flexible")+'</div><h3>'+escapeHTML(item.title)+'</h3><p>'+escapeHTML(item.description)+'</p><div class="work-tags"><span class="work-tag">'+escapeHTML(item.category||"Other")+'</span>'+(item.compensation?'<span class="work-tag">'+escapeHTML(item.compensation)+'</span>':'')+'</div><div class="work-owner">Posted by '+escapeHTML(item.member_name||"NOM Member")+(item.member_username?" · @"+escapeHTML(item.member_username):"")+'</div>'+action+(own?'<div class="work-meta">Your listing</div>':'')+'</article>';
+}
+
+function renderWorkListings(){
+  const target=document.getElementById("workListings");
+  if(!target)return;
+  const term=(document.getElementById("workSearch")?.value||"").trim().toLowerCase();
+  const type=document.getElementById("workTypeFilter")?.value||"all";
+  const filtered=workListingsCache.filter(item=>{
+    const text=[item.title,item.description,item.location,item.category,item.compensation,item.member_name,item.member_username].join(" ").toLowerCase();
+    return (type==="all"||item.listing_type===type)&&(!term||text.includes(term));
+  });
+  target.innerHTML=filtered.length?filtered.map(item=>workListingCard(item,item.user_id===currentUser?.id)).join(""):'<div class="work-empty">No matching opportunities yet. Try another search or be the first to post.</div>';
+}
+
+async function loadWorkProfiles(){
+  const target=document.getElementById("workTalent");
+  if(!target||!currentUser)return;
+  target.innerHTML='<div class="work-empty">Discovering NOM talent...</div>';
+  const {data,error}=await supabaseClient.from("work_profiles")
+    .select("user_id,display_name,username,headline,bio,skills,portfolio_url,availability,location,updated_at")
+    .order("updated_at",{ascending:false}).limit(100);
+  if(error){target.innerHTML='<div class="work-empty">Member portfolios are temporarily unavailable.</div>';return;}
+  workProfilesCache=data||[];
+  renderWorkTalent();
+}
+
+function renderWorkTalent(){
+  const target=document.getElementById("workTalent");
+  if(!target)return;
+  const term=(document.getElementById("talentSearch")?.value||"").trim().toLowerCase();
+  const filtered=workProfilesCache.filter(person=>[person.display_name,person.username,person.headline,person.bio,person.location,(person.skills||[]).join(" ")].join(" ").toLowerCase().includes(term));
+  target.innerHTML=filtered.length?filtered.map(person=>{
+    const url=safeWorkUrl(person.portfolio_url);
+    const skills=(person.skills||[]).map(skill=>'<span class="work-tag">'+escapeHTML(skill)+'</span>').join("");
+    return '<article class="work-card"><div class="work-meta">'+escapeHTML(person.availability==="open"?"AVAILABLE FOR WORK":person.availability==="selective"?"OPEN TO SELECT OPPORTUNITIES":"NOT CURRENTLY AVAILABLE")+' · '+escapeHTML(person.location||"Location not specified")+'</div><h3>'+escapeHTML(person.display_name||"NOM Member")+'</h3><div class="work-owner">'+(person.username?"@"+escapeHTML(person.username):"NOM member")+'</div><p><strong>'+escapeHTML(person.headline||"NOM creative")+'</strong></p><p>'+escapeHTML(person.bio||"This member is building their NOM portfolio.")+'</p><div class="work-tags">'+skills+'</div>'+(url?'<a class="work-apply" href="'+escapeHTML(url)+'" target="_blank" rel="noopener">View portfolio</a>':'')+'</article>';
+  }).join(""):'<div class="work-empty">No portfolios match yet. Create yours and be among the first NOM talents.</div>';
+}
+
+async function loadOwnWorkProfile(){
+  if(!currentUser)return;
+  const {data,error}=await supabaseClient.from("work_profiles").select("*").eq("user_id",currentUser.id).maybeSingle();
+  if(error)return;
+  const profile=data||{};
+  document.getElementById("workHeadline").value=profile.headline||"";
+  document.getElementById("workBio").value=profile.bio||"";
+  document.getElementById("workSkills").value=(profile.skills||[]).join(", ");
+  document.getElementById("workPortfolioUrl").value=profile.portfolio_url||"";
+  document.getElementById("workAvailability").value=profile.availability||"open";
+  document.getElementById("workLocation").value=profile.location||"";
+}
+
+async function saveWorkProfile(){
+  const message=document.getElementById("workProfileMessage");
+  if(!currentUser){openWork();return;}
+  const headline=document.getElementById("workHeadline").value.trim();
+  const bio=document.getElementById("workBio").value.trim();
+  const skills=document.getElementById("workSkills").value.split(",").map(x=>x.trim()).filter(Boolean).slice(0,20);
+  const portfolioUrl=document.getElementById("workPortfolioUrl").value.trim();
+  const location=document.getElementById("workLocation").value.trim();
+  if(portfolioUrl&&!safeWorkUrl(portfolioUrl)){message.textContent="Please enter a valid portfolio link beginning with https://.";return;}
+  message.textContent="Saving your NOM portfolio...";
+  const {data:baseProfile}=await supabaseClient.from("profiles").select("username,display_name").eq("id",currentUser.id).maybeSingle();
+  const meta=currentUser.user_metadata||{};
+  const {error}=await supabaseClient.from("work_profiles").upsert({
+    user_id:currentUser.id,
+    display_name:baseProfile?.display_name||meta.display_name||"NOM Member",
+    username:baseProfile?.username||meta.username||"",
+    headline,bio,skills,portfolio_url:portfolioUrl||null,
+    availability:document.getElementById("workAvailability").value,
+    location,updated_at:new Date().toISOString()
+  },{onConflict:"user_id"});
+  message.textContent=error?error.message:"Your NOM portfolio has been saved.";
+  if(!error)loadWorkProfiles();
+}
+
+async function loadMyWorkListings(){
+  const target=document.getElementById("myWorkListings");
+  if(!target||!currentUser)return;
+  const {data,error}=await supabaseClient.from("work_listings")
+    .select("id,user_id,listing_type,title,description,location,work_mode,category,compensation,contact_email,application_url,member_name,member_username,created_at,status")
+    .eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(50);
+  target.innerHTML=error?'<div class="work-empty">Could not load your listings.</div>':data?.length?data.map(item=>workListingCard(item,true)).join(""):'<div class="work-empty">You have not posted an opportunity yet.</div>';
+}
+
+async function submitWorkListing(){
+  const message=document.getElementById("workListingMessage");
+  if(!currentUser){openWork();return;}
+  const title=document.getElementById("workListingTitle").value.trim();
+  const description=document.getElementById("workListingDescription").value.trim();
+  const email=document.getElementById("workListingEmail").value.trim()||currentUser.email||"";
+  const applicationUrl=document.getElementById("workListingUrl").value.trim();
+  if(title.length<3||description.length<10){message.textContent="Please add a clear title and description.";return;}
+  if(!email&&!applicationUrl){message.textContent="Please provide a contact email or application link.";return;}
+  if(applicationUrl&&!safeWorkUrl(applicationUrl)){message.textContent="Please enter a valid application link beginning with https://.";return;}
+  message.textContent="Publishing your opportunity...";
+  const {data:baseProfile}=await supabaseClient.from("profiles").select("username,display_name").eq("id",currentUser.id).maybeSingle();
+  const meta=currentUser.user_metadata||{};
+  const payload={
+    user_id:currentUser.id,
+    listing_type:document.getElementById("workListingType").value,
+    title,description,
+    location:document.getElementById("workListingLocation").value.trim()||"Remote",
+    work_mode:document.getElementById("workListingMode").value,
+    category:document.getElementById("workListingCategory").value.trim()||"Other",
+    compensation:document.getElementById("workListingCompensation").value.trim()||null,
+    contact_email:email||null,
+    application_url:applicationUrl||null,
+    member_name:baseProfile?.display_name||meta.display_name||"NOM Member",
+    member_username:baseProfile?.username||meta.username||"",
+    status:"published"
+  };
+  const {error}=await supabaseClient.from("work_listings").insert(payload);
+  if(error){message.textContent=error.message;return;}
+  message.textContent="Your opportunity is now published for NOM members.";
+  ["workListingTitle","workListingDescription","workListingLocation","workListingCategory","workListingCompensation","workListingUrl"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("workListingEmail").value=currentUser.email||"";
+  setWorkView("listings");
+}
+
+function prefillWorkContact(){
+  const email=document.getElementById("workListingEmail");
+  if(email&&currentUser&&!email.value)email.value=currentUser.email||"";
 }
 
 /* PLACE CARDS — live Supabase catalogue and keyword search */
@@ -868,6 +1160,7 @@ async function submitAuth(){
         currentUser = data.user;
         message.textContent = "Account created successfully.";
         updateProfile();
+        if(pendingWorkAccess){pendingWorkAccess=false;showPage("work");}
       }else{
         message.textContent = "Registration received. Please check your email to confirm your account.";
       }
@@ -883,6 +1176,7 @@ async function submitAuth(){
       currentUser = data.user;
       message.textContent = "Login successful.";
       updateProfile();
+      if(pendingWorkAccess){pendingWorkAccess=false;showPage("work");}
     }
 
   }catch(error){
@@ -923,6 +1217,7 @@ async function logout(){
 
     currentUser = null;
     updateProfile();
+    if(document.getElementById("workPage")&&!document.getElementById("workPage").classList.contains("hidden"))showPage("profile");
     message.textContent = "You have logged out.";
   }catch(error){
     message.textContent = error.message || "Unable to log out.";
@@ -941,10 +1236,12 @@ async function initialiseApp(){
 
     currentUser = data.session ? data.session.user : null;
     updateProfile();
+    prefillWorkContact();
 
     supabaseClient.auth.onAuthStateChange((_event,session)=>{
       currentUser = session ? session.user : null;
       updateProfile();
+      prefillWorkContact();
     });
 
   }catch(error){
