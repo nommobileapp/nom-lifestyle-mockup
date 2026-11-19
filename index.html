@@ -303,7 +303,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     <label for="communityPhotos">Your photos</label><input id="communityPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple>
     <button class="primary" id="communitySubmit" type="button" onclick="submitCommunityPlace()">Submit place</button>
     <button class="secondary" type="button" onclick="hideCommunityComposer()">Cancel</button>
-    <div class="message" id="communityMessage"></div><p class="small">Submissions are reviewed before appearing publicly in Explore and Community.</p>
+    <div class="message" id="communityMessage"></div><p class="small">Your place and photos appear publicly in Explore and Community as soon as you share them.</p>
   </div>
   <h2>Discoveries from the community</h2><div id="communityFeed"><p class="small">Loading community discoveries...</p></div>
   <h2>Your submissions</h2><div id="myCommunitySubmissions"><p class="small">Log in to see your submissions.</p></div>
@@ -613,7 +613,7 @@ async function showCommunityComposer(){
 function hideCommunityComposer(){document.getElementById("communityComposer").classList.add("hidden");}
 function communityPostCard(post,own=false){
   const photos=Array.isArray(post.photo_urls)?post.photo_urls:[],photo=photos[0]||"";
-  const status=post.status==="published"?"Published on NOM":post.status==="rejected"?"Not approved":"Pending review";
+  const status="Published on NOM";
   return `<article class="community-post">${photo?`<img src="${escapeHTML(photo)}" alt="${escapeHTML(post.title)}" loading="lazy">`:""}
     <div class="post-meta">${escapeHTML(post.category||"DISCOVERY")} · ${escapeHTML(post.location||"")}</div>
     <h3>${escapeHTML(post.title)}</h3><p>${escapeHTML(post.description)}</p>
@@ -643,11 +643,11 @@ async function submitCommunityPlace(){
       const {data:up,error:upError}=await supabaseClient.storage.from("community-photos").upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type});
       if(upError)throw upError;uploaded.push(up.path);photoUrls.push(supabaseClient.storage.from("community-photos").getPublicUrl(up.path).data.publicUrl);
     }
-    message.textContent="Photos uploaded. Sending your place for review...";
-    const {error}=await supabaseClient.from("community_posts").insert({user_id:currentUser.id,username,display_name:displayName,title,description,location,category,photo_urls:photoUrls});
+    message.textContent="Photos uploaded. Publishing your place...";
+    const {error}=await supabaseClient.from("community_posts").insert({user_id:currentUser.id,username,display_name:displayName,title,description,location,category,photo_urls:photoUrls,status:"published"});
     if(error)throw error;
     document.getElementById("communityTitle").value="";document.getElementById("communityLocation").value="";document.getElementById("communityDescription").value="";document.getElementById("communityPhotos").value="";
-    message.textContent="Your place has been submitted! It will appear after review.";await loadCommunityFeed();
+    message.textContent="Your place is now live on NOM!";await loadCommunityFeed();
   }catch(error){if(uploaded.length)await supabaseClient.storage.from("community-photos").remove(uploaded);message.textContent=error.message||"Upload failed. Please try again.";}
   finally{button.disabled=false;button.textContent="Submit place";}
 }
