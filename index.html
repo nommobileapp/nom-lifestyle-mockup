@@ -830,75 +830,134 @@ async function filterPlaces(category,button){
 }
 
 let searchDebounce;
+function withPlaceTimeout(promise, label, timeoutMs=8000){
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise((_,reject)=>setTimeout(()=>reject(new Error(label+" timed out")),timeoutMs))
+  ]);
+}
+
+function mergePlaceRecords(records){
+  const merged = new Map();
+  records.forEach(place=>{
+    const key = String(place.source_id || place.id);
+    const previous = merged.get(key) || {};
+    merged.set(key,{
+      ...previous,
+      ...place,
+      image_url:place.image_url || previous.image_url || null,
+      image_attribution:place.image_attribution || previous.image_attribution || null,
+      image_license:place.image_license || previous.image_license || null,
+      image_source_url:place.image_source_url || previous.image_source_url || null
+    });
+  });
+  return [...merged.values()];
+}
+
 async function searchPlaces(query){
   clearTimeout(searchDebounce);
   const requestId = ++searchRequestId;
   const value = (query || "").trim();
 
-  searchDebounce = setTimeout(async ()=>{
-    const [localResult, remoteResult, communityResult] = await Promise.all([
-      supabaseClient
-        ? supabaseClient.rpc("search_places",{search_text:value,category_filter:selectedCategory})
-            .catch(error=>({data:[],error}))
-        : Promise.resolve({data:[],error:new Error("Supabase client unavailable")}),
-      fetch(`${SUPABASE_URL}/functions/v1/nom-place-search?q=${encodeURIComponent(value)}&category=${encodeURIComponent(selectedCategory)}&limit=30`,{headers:{apikey:SUPABASE_KEY}})
-        .then(async response=>{if(!response.ok)throw new Error("External place search unavailable");return response.json();})
-        .catch(error=>{console.warn("NOM external place search:",error.message);return {places:[]};}),
-      supabaseClient
-        ? supabaseClient.from("community_posts").select("id,title,description,location,category,photo_urls,user_id,username,display_name").eq("status","published").limit(50)
-            .then(result=>result).catch(error=>({data:[],error}))
-        : Promise.resolve({data:[],error:new Error("Supabase client unavailable")})
-    ]);
+  // Keep existing cards visible during a refresh; show the loading message only on first load.
+  if(!currentResults.length){
+    document.getElementById("homePlaces").innerHTML = '<p class="small">Loading places from NOM...</p>';
+    document.getElementById("explorePlaces").innerHTML = '<p class="small">Loading places from NOM...</p>';
+  }
 
-    if(requestId !== searchRequestId) return;
-    if(localResult.error){
-      console.error("NOM database search:",localResult.error.message);
+  searchDebounce = setTimeout(()=>{
+    const results = {local:[],remote:[],community:[]};
+    let completed = 0;
+    let failed = 0;
+
+    function publishResults(){
+      if(requestId !== searchRequestId) return;
+      const nextResults = mergePlaceRecords([
+        ...results.remote,
+        ...results.community,
+        ...results.local
+      ]);
+      // Keep the previous cards (or initial loading state) until the first source responds with data,
+      // or all sources finish. A fast empty response must not hide cards while another source is pending.
+      if(nextResults.length || completed === 3){
+        currentResults = nextResults;
+        places = mergePlaceRecords([...places,...currentResults]);
+        renderPlaces(currentResults);
+        renderSaved();
+      }
+
+      const message = document.getElementById("placesMessage");
+      if(message){
+        if(currentResults.length){
+          message.textContent = results.remote.length
+            ? "Live discoveries from Geoapify and OpenStreetMap."
+            : "Showing places saved in the NOM catalogue.";
+        }else if(completed === 3){
+          message.textContent = failed === 3
+            ? "Places are temporarily unavailable. Please try again."
+            : "No matches yet. Try another keyword or category.";
+        }
+      }
     }
 
-    const localPlaces = localResult.data || [];
-    const externalPlaces = (remoteResult.places || []).map(place=>({...place,id:place.source_id || place.id,rating:null,price:null}));
-    const communityPlaces = (communityResult.data || [])
-      .filter(post=>(selectedCategory === "All" || post.category === selectedCategory) &&
-        (!value || [post.title,post.description,post.location].some(field=>String(field||"").toLowerCase().includes(value.toLowerCase()))))
-      .map(post=>({
-        id:"community-" + post.id,source_id:"community-" + post.id,name:post.title,
-        description:post.description,location:post.location,category:post.category,
-        image_url:(post.photo_urls || [])[0] || null,image:(post.photo_urls || [])[0] || null,
-        rating:null,price:null
-      }));
-
-    function mergePlaceRecords(records){
-      const merged = new Map();
-      records.forEach(place=>{
-        const key = String(place.source_id || place.id);
-        const previous = merged.get(key) || {};
-        merged.set(key,{
-          ...previous,
-          ...place,
-          image_url:place.image_url || previous.image_url || null,
-          image_attribution:place.image_attribution || previous.image_attribution || null,
-          image_license:place.image_license || previous.image_license || null,
-          image_source_url:place.image_source_url || previous.image_source_url || null
-        });
-      });
-      return [...merged.values()];
+    function settle(source, records){
+      if(requestId !== searchRequestId) return;
+      results[source] = records;
+      completed++;
+      publishResults();
     }
 
-    // Local NOM records are applied last, preserving cached photos during live searches.
-    currentResults = mergePlaceRecords([...externalPlaces,...communityPlaces,...localPlaces]);
-    places = mergePlaceRecords([...places,...currentResults]);
-
-    renderPlaces(currentResults);
-    renderSaved();
-
-    const message = document.getElementById("placesMessage");
-    if(message && !externalPlaces.length && !localPlaces.length){
-      message.textContent = "No matches yet. Try another keyword or category.";
-    }else if(message){
-      message.textContent = externalPlaces.length
-        ? "Live discoveries from Geoapify and OpenStreetMap."
-        : "Showing places saved in the NOM catalogue.";
+    function fail(source, error){
+      if(requestId !== searchRequestId) return;
+      console.warn("NOM "+source+" place search:",error.message || error);
+      failed++;
+      completed++;
+      publishResults();
     }
+
+    // Each source has its own deadline and updates the cards independently.
+    const localRequest = supabaseClient
+      ? supabaseClient.rpc("search_places",{search_text:value,category_filter:selectedCategory})
+      : Promise.reject(new Error("Supabase client unavailable"));
+    withPlaceTimeout(localRequest,"NOM catalogue search")
+      .then(result=>{
+        if(result.error) throw result.error;
+        settle("local",result.data || []);
+      })
+      .catch(error=>fail("local",error));
+
+    const remoteRequest = fetch(
+      `${SUPABASE_URL}/functions/v1/nom-place-search?q=${encodeURIComponent(value)}&category=${encodeURIComponent(selectedCategory)}&limit=30`,
+      {headers:{apikey:SUPABASE_KEY}}
+    ).then(async response=>{
+      if(!response.ok) throw new Error("External place search unavailable ("+response.status+")");
+      const data = await response.json();
+      return (data.places || []).map(place=>({...place,id:place.source_id || place.id,rating:null,price:null}));
+    });
+    withPlaceTimeout(remoteRequest,"Live place search")
+      .then(records=>settle("remote",records))
+      .catch(error=>fail("remote",error));
+
+    const communityRequest = supabaseClient
+      ? supabaseClient.from("community_posts")
+          .select("id,title,description,location,category,photo_urls,user_id,username,display_name")
+          .eq("status","published").limit(50)
+      : Promise.reject(new Error("Supabase client unavailable"));
+    withPlaceTimeout(communityRequest,"Community place search")
+      .then(result=>{
+        if(result.error) throw result.error;
+        const records = (result.data || [])
+          .filter(post=>(selectedCategory === "All" || post.category === selectedCategory) &&
+            (!value || [post.title,post.description,post.location].some(field=>String(field||"").toLowerCase().includes(value.toLowerCase()))))
+          .map(post=>({
+            id:"community-" + post.id,source_id:"community-" + post.id,name:post.title,
+            description:post.description,location:post.location,category:post.category,
+            image_url:(post.photo_urls || [])[0] || null,image:(post.photo_urls || [])[0] || null,
+            rating:null,price:null
+          }));
+        settle("community",records);
+      })
+      .catch(error=>fail("community",error));
   },350);
 }
 
