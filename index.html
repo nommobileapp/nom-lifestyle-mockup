@@ -127,12 +127,28 @@ p{color:var(--muted);line-height:1.5}
   overflow:hidden;
 }
 .place-image{
-  height:125px;
+  height:150px;
+  position:relative;
+  overflow:hidden;
   background:linear-gradient(135deg,#4b3425,#1e2926);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:38px;
+}
+.place-image img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+}
+.place-rating{
+  position:absolute;
+  right:9px;
+  top:9px;
+  background:#111c;
+  color:var(--lime);
+  border:1px solid #ffffff22;
+  border-radius:20px;
+  padding:5px 8px;
+  font-size:11px;
+  font-weight:700;
 }
 .place-content{padding:12px}
 .place-content p{font-size:12px;margin:5px 0}
@@ -365,12 +381,12 @@ let selectedCategory = "All";
 
 /* DEMO PLACES — these are local sample listings */
 const places = [
-  {id:1,name:"Uluwatu",location:"South Bali",category:"Beach",icon:"🌊",description:"Cliffs, ocean views and beautiful sunsets."},
-  {id:2,name:"Ubud",location:"Central Bali",category:"Culture",icon:"🌿",description:"Art, rice terraces and Balinese culture."},
-  {id:3,name:"Mount Batur",location:"Kintamani",category:"Nature",icon:"🌋",description:"A memorable sunrise mountain experience."},
-  {id:4,name:"Canggu Cafes",location:"Canggu",category:"Food",icon:"☕",description:"Coffee, food and a creative lifestyle."},
-  {id:5,name:"Nusa Penida",location:"Bali",category:"Beach",icon:"🏝️",description:"Island scenery and spectacular coastlines."},
-  {id:6,name:"Tegallalang",location:"Ubud",category:"Nature",icon:"🌾",description:"Famous green rice terraces."}
+  {id:1,name:"Kelingking Beach",location:"Nusa Penida, Bali",category:"Beach",rating:"4.9",price:"Free to visit",image:"https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=85",description:"Dramatic cliffs and turquoise water."},
+  {id:2,name:"Tropical Brunch Club",location:"Canggu, Bali",category:"Food",rating:"4.8",price:"IDR 80k–150k",image:"https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&w=800&q=85",description:"Slow mornings, good coffee, bright plates."},
+  {id:3,name:"Ubud Green Escape",location:"Ubud, Bali",category:"Nature",rating:"4.7",price:"From IDR 50k",image:"https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?auto=format&fit=crop&w=800&q=85",description:"A quiet green escape in the highlands."},
+  {id:4,name:"Sundown Social",location:"Seminyak, Bali",category:"Food",rating:"4.6",price:"IDR 100k–250k",image:"https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=800&q=85",description:"Cocktails and golden-hour energy."},
+  {id:5,name:"Warung Sari",location:"Ubud, Bali",category:"Food",rating:"4.8",price:"IDR 25k–70k",image:"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=85",description:"Local flavours with fresh ingredients."},
+  {id:6,name:"Coastal Hideaway",location:"Uluwatu, Bali",category:"Beach",rating:"4.9",price:"From IDR 900k/night",image:"https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=85",description:"A slow stay with ocean views."}
 ];
 
 let savedIds = JSON.parse(localStorage.getItem("nomSaved") || "[]");
@@ -401,12 +417,15 @@ function placeCard(place){
 
   return `
     <article class="place">
-      <div class="place-image">${place.icon}</div>
+      <div class="place-image">
+        <img src="${place.image}" alt="${place.name}" loading="lazy">
+        <span class="place-rating">★ ${place.rating}</span>
+      </div>
       <div class="place-content">
         <div class="place-meta">${place.category.toUpperCase()}</div>
         <h3>${place.name}</h3>
         <p>${place.description}</p>
-        <p class="small">${place.location}</p>
+        <p class="small">${place.location} · ${place.price}</p>
         <button class="save-button" onclick="toggleSave(${place.id})">
           ${isSaved ? "♥ Saved" : "♡ Save place"}
         </button>
