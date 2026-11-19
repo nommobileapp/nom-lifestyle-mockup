@@ -121,7 +121,7 @@ p{color:var(--muted);line-height:1.5}
 .category.active{background:var(--lime);color:#111;border-color:var(--lime)}
 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
 .place{cursor:pointer}.community-post{cursor:pointer}
-.detail-overlay{position:fixed!important;inset:0!important;width:100vw;height:100vh;height:100dvh;min-height:100vh;z-index:99999;background:#101010;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:none;visibility:hidden}.detail-overlay.open{display:block!important;visibility:visible!important}.detail-topbar{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:calc(12px + env(safe-area-inset-top)) 18px;background:#101010ed;border-bottom:1px solid var(--border)}.detail-close{width:42px;height:42px;border-radius:50%;background:var(--panel2);color:white;border:1px solid var(--border);font-size:23px}.detail-body{max-width:760px;margin:auto;padding-bottom:40px}.detail-gallery{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:5px}.detail-gallery img{width:100%;min-width:100%;height:min(68vh,560px);object-fit:cover;scroll-snap-align:center}.detail-copy{padding:22px 20px}.detail-copy h1{font-size:30px}.detail-location{color:var(--lime);font-size:13px}.detail-description{color:#ddd;font-size:15px;line-height:1.7;white-space:pre-wrap}.detail-credit{font-size:11px;color:var(--muted)}
+.detail-overlay{position:fixed!important;inset:0!important;width:100vw;height:100vh;height:100dvh;min-height:100vh;z-index:99999;background:#101010;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:none;visibility:hidden}.detail-overlay.open{display:block!important;visibility:visible!important}.detail-topbar{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:calc(12px + env(safe-area-inset-top)) 18px;background:#101010ed;border-bottom:1px solid var(--border)}.detail-back{display:flex;align-items:center;gap:7px;min-width:72px;background:transparent;border:0;color:var(--white);font-size:16px;padding:8px 0}.detail-back span{font-size:13px}.detail-close{width:42px;height:42px;border-radius:50%;background:var(--panel2);color:white;border:1px solid var(--border);font-size:23px}.detail-body{max-width:760px;margin:auto;padding-bottom:40px}.detail-gallery{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:5px}.detail-gallery img{width:100%;min-width:100%;height:min(68vh,560px);object-fit:cover;scroll-snap-align:center}.detail-copy{padding:22px 20px}.detail-copy h1{font-size:30px}.detail-location{color:var(--lime);font-size:13px}.detail-description{color:#ddd;font-size:15px;line-height:1.7;white-space:pre-wrap}.detail-credit{font-size:11px;color:var(--muted)}
 .place{
   background:var(--panel);
   border:1px solid var(--border);
@@ -378,7 +378,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   </div>
 </section>
 
-</main><div id="placeDetailOverlay" class="detail-overlay" role="dialog" aria-modal="true" aria-hidden="true" onclick="if(event.target===this)closePlaceDetail()"><div class="detail-topbar"><span class="eyebrow">NOM DISCOVERY</span><button class="detail-close" onclick="closePlaceDetail()" aria-label="Close">×</button></div><div class="detail-body" id="placeDetailBody"></div></div>
+</main><div id="placeDetailOverlay" class="detail-overlay" role="dialog" aria-modal="true" aria-hidden="true" onclick="if(event.target===this)closePlaceDetail()"><div class="detail-topbar"><button class="detail-back" type="button" onclick="closePlaceDetail()" aria-label="Back to places">← <span>Back</span></button><span class="eyebrow">NOM DISCOVERY</span><button class="detail-close" type="button" onclick="closePlaceDetail()" aria-label="Close">×</button></div><div class="detail-body" id="placeDetailBody"></div></div>
 
 <nav class="bottom-nav">
   <button class="nav-item active" data-page="home" onclick="showPage('home')"><span>⌂</span>Home</button>
@@ -433,15 +433,28 @@ function showPage(page){
 }
 
 /* PLACE CARDS — live Supabase catalogue and keyword search */
+let detailHistoryOpen=false;
+function hidePlaceDetail(){
+ const overlay=document.getElementById('placeDetailOverlay');
+ overlay.classList.remove('open');
+ overlay.setAttribute('aria-hidden','true');
+ document.documentElement.style.overflow='';
+ document.body.style.overflow='';
+ detailHistoryOpen=false;
+}
 function openPlaceDetail(id){
  const item=nomDetailItems[String(id)];if(!item)return;
  const photos=(item.photos||[]).filter(Boolean);
  const gallery=photos.length?'<div class="detail-gallery">'+photos.map(url=>'<img src="'+escapeHTML(url)+'" alt="'+escapeHTML(item.name)+'" loading="lazy">').join('')+'</div>':'';
  const rating=item.rating?'★ '+item.rating:'';
- const save=item.kind==='place'?'<button class="primary" onclick="toggleSave(\''+escapeHTML(String(item.id))+'\');closePlaceDetail()">♡ Save this place</button>':'';
+ const save=item.kind==='place'?'<button class="primary" onclick="toggleSave(\\''+escapeHTML(String(item.id))+'\\');closePlaceDetail()">♡ Save this place</button>':'';
  const credit=item.attribution?'<p class="detail-credit">Photo: '+escapeHTML(item.attribution)+' · '+escapeHTML(item.license||'Licence details unavailable')+'</p>':'';
  document.getElementById('placeDetailBody').innerHTML=gallery+'<div class="detail-copy"><div class="eyebrow">'+escapeHTML((item.category||'DISCOVERY').toUpperCase())+(rating?' · '+escapeHTML(rating):'')+'</div><h1>'+escapeHTML(item.name)+'</h1><div class="detail-location">'+escapeHTML(item.location||'')+(item.price?' · '+escapeHTML(item.price):'')+'</div><p class="detail-description">'+escapeHTML(item.description||'')+'</p>'+(item.author?'<p class="small">Shared by '+escapeHTML(item.author)+'</p>':'')+save+credit+'</div>';
  const overlay=document.getElementById('placeDetailOverlay');
+ if(!detailHistoryOpen){
+   history.pushState({...history.state,nomPlaceDetail:true},'',location.pathname+location.search+'#place-detail');
+   detailHistoryOpen=true;
+ }
  overlay.classList.add('open');
  overlay.setAttribute('aria-hidden','false');
  document.documentElement.style.overflow='hidden';
@@ -450,12 +463,15 @@ function openPlaceDetail(id){
  requestAnimationFrame(()=>{overlay.scrollTop=0;});
 }
 function closePlaceDetail(){
- const overlay=document.getElementById('placeDetailOverlay');
- overlay.classList.remove('open');
- overlay.setAttribute('aria-hidden','true');
- document.documentElement.style.overflow='';
- document.body.style.overflow='';
+ if(detailHistoryOpen && history.state && history.state.nomPlaceDetail){
+   history.back();
+   return;
+ }
+ hidePlaceDetail();
 }
+window.addEventListener('popstate',()=>{
+ if(detailHistoryOpen || document.getElementById('placeDetailOverlay').classList.contains('open')) hidePlaceDetail();
+});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closePlaceDetail();});
 
 function placeCard(place){
