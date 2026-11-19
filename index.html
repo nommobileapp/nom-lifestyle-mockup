@@ -872,14 +872,19 @@ async function searchPlaces(query){
 
     function publishResults(){
       if(requestId !== searchRequestId) return;
-      currentResults = mergePlaceRecords([
+      const nextResults = mergePlaceRecords([
         ...results.remote,
         ...results.community,
         ...results.local
       ]);
-      places = mergePlaceRecords([...places,...currentResults]);
-      renderPlaces(currentResults);
-      renderSaved();
+      // Keep the previous cards (or initial loading state) until the first source responds with data,
+      // or all sources finish. A fast empty response must not hide cards while another source is pending.
+      if(nextResults.length || completed === 3){
+        currentResults = nextResults;
+        places = mergePlaceRecords([...places,...currentResults]);
+        renderPlaces(currentResults);
+        renderSaved();
+      }
 
       const message = document.getElementById("placesMessage");
       if(message){
