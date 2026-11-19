@@ -270,7 +270,12 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     <button class="category" onclick="filterPlaces('Beach',this)">Beach</button>
     <button class="category" onclick="filterPlaces('Culture',this)">Culture</button>
   </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0">
+    <button class="secondary" id="importBaliButton" type="button" onclick="importBaliPlaces()">Save up to 100 Bali places to NOM</button>
+  </div>
+  <div class="message" id="placesMessage"></div>
   <div class="cards" id="explorePlaces"></div>
+  <p class="small" style="margin-top:14px">Place data: © OpenStreetMap contributors · Powered by <a href="https://www.geoapify.com/" target="_blank" rel="noopener" style="color:var(--orange)">Geoapify</a>.</p>
 </section>
 
 <section id="communityPage" class="hidden">
@@ -415,7 +420,7 @@ function placeCard(place){
   return `
     <article class="place">
       <div class="place-image">
-        <img src="${image}" alt="${escapeHTML(place.name)}" loading="lazy">
+        ${image ? `<img src="${escapeHTML(image)}" alt="${escapeHTML(place.name)}" loading="lazy">` : `<div style="height:100%;display:grid;place-items:center;color:var(--lime);font-size:12px;letter-spacing:2px">NOM DISCOVERY</div>`}
         ${rating ? `<span class="place-rating">${rating}</span>` : ""}
       </div>
       <div class="place-content">
@@ -449,24 +454,105 @@ async function filterPlaces(category,button){
   await searchPlaces(homeQuery || exploreQuery);
 }
 
+let searchDebounce;
 async function searchPlaces(query){
+  clearTimeout(searchDebounce);
   const requestId = ++searchRequestId;
   const value = (query || "").trim();
-  const {data,error} = await supabaseClient.rpc("search_places",{
-    search_text:value,
-    category_filter:selectedCategory
-  });
-  if(requestId !== searchRequestId) return;
-  if(error){
-    console.error("NOM places search:",error.message);
-    document.getElementById("homePlaces").innerHTML = '<p class="small">Places are temporarily unavailable. Please try again.</p>';
-    document.getElementById("explorePlaces").innerHTML = '<p class="small">Places are temporarily unavailable. Please try again.</p>';
+
+  searchDebounce = setTimeout(async ()=>{
+    const [localResult, remoteResult] = await Promise.all([
+      supabaseClient.rpc("search_places",{
+        search_text:value,
+        category_filter:selectedCategory
+      }),
+      fetch(`${SUPABASE_URL}/functions/v1/nom-place-search?q=${encodeURIComponent(value)}&category=${encodeURIComponent(selectedCategory)}&limit=30`,{
+        headers:{apikey:SUPABASE_KEY}
+      }).then(async response=>{
+        if(!response.ok) throw new Error("External place search unavailable");
+        return response.json();
+      }).catch(error=>{
+        console.warn("NOM external place search:",error.message);
+        return {places:[]};
+      })
+    ]);
+
+    if(requestId !== searchRequestId) return;
+    if(localResult.error){
+      console.error("NOM database search:",localResult.error.message);
+    }
+
+    const localPlaces = localResult.data || [];
+    const externalPlaces = (remoteResult.places || []).map(place=>({
+      ...place,
+      id:place.source_id || place.id,
+      rating:null,
+      price:null
+    }));
+
+    currentResults = [...new Map(
+      [...localPlaces,...externalPlaces].map(place=>[String(place.source_id || place.id),place])
+    ).values()];
+
+    places = [...new Map(
+      [...places,...currentResults].map(place=>[String(place.source_id || place.id),place])
+    ).values()];
+
+    renderPlaces(currentResults);
+    renderSaved();
+
+    const message = document.getElementById("placesMessage");
+    if(message && !externalPlaces.length && !localPlaces.length){
+      message.textContent = "No matches yet. Try another keyword or category.";
+    }else if(message){
+      message.textContent = externalPlaces.length
+        ? "Live discoveries from Geoapify and OpenStreetMap."
+        : "Showing places saved in the NOM catalogue.";
+    }
+  },350);
+}
+
+async function importBaliPlaces(){
+  const message = document.getElementById("placesMessage");
+  const button = document.getElementById("importBaliButton");
+  if(!currentUser){
+    message.textContent = "Please log in to NOM before saving places to the catalogue.";
+    showPage("profile");
+    showAuth("login");
     return;
   }
-  currentResults = data || [];
-  places = currentResults.length ? [...new Map([...places,...currentResults].map(p=>[p.id,p])).values()] : places;
-  renderPlaces(currentResults);
-  renderSaved();
+
+  const {data:{session}} = await supabaseClient.auth.getSession();
+  if(!session){
+    message.textContent = "Your session has expired. Please log in again.";
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "Importing Bali places...";
+  message.textContent = "Finding and saving up to 100 places into NOM...";
+
+  try{
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/nom-place-search`,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "apikey":SUPABASE_KEY,
+        "Authorization":`Bearer ${session.access_token}`
+      },
+      body:JSON.stringify({category:"All",limit:100,import:true})
+    });
+    const result = await response.json();
+    if(!response.ok) throw new Error(result.error || "Import failed");
+
+    message.textContent = `${result.imported} Bali places saved to the NOM database. Search to explore them.`;
+    await searchPlaces(document.getElementById("exploreSearch")?.value || "");
+  }catch(error){
+    message.textContent = error.message || "Could not import places. Please try again.";
+  }finally{
+    button.disabled = false;
+    button.textContent = "Save up to 100 Bali places to NOM";
+  }
 }
 
 function toggleSave(id){
