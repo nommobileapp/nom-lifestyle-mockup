@@ -273,6 +273,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0">
     <button class="secondary" id="importBaliButton" type="button" onclick="importBaliPlaces()">Save up to 100 Bali places to NOM</button>
   </div>
+  <div style="display:flex;align-items:center;gap:9px;margin:8px 0 12px">
+    <button class="category active" id="photosOnlyButton" type="button" aria-pressed="true" onclick="togglePhotosOnly()">📷 Photos only: ON</button>
+  </div>
   <div class="message" id="placesMessage"></div>
   <div class="cards" id="explorePlaces"></div>
   <p class="small" style="margin-top:14px">Place data: © OpenStreetMap contributors · Powered by <a href="https://www.geoapify.com/" target="_blank" rel="noopener" style="color:var(--orange)">Geoapify</a>.</p>
@@ -383,6 +386,7 @@ const supabaseClient = window.supabase.createClient(
 let currentUser = null;
 let authMode = "signup";
 let selectedCategory = "All";
+let photosOnly = true;
 
 /* PLACES — loaded from the Supabase catalogue */
 let places = [];
@@ -436,11 +440,28 @@ function placeCard(place){
   `;
 }
 
+function hasPlaceImage(place){
+  const image = place.image_url || place.image || "";
+  return typeof image === "string" && (image.trim().startsWith("https://") || image.trim().startsWith("http://"));
+}
+
 function renderPlaces(list=currentResults){
-  const html = list.map(placeCard).join("");
-  const empty = list.length ? html : '<p class="small">No places found. Try another search or category.</p>';
+  const visibleList = photosOnly ? list.filter(hasPlaceImage) : list;
+  const html = visibleList.map(placeCard).join("");
+  const empty = visibleList.length ? html : (photosOnly
+    ? '<p class="small">No places with photos found for this search. Try another keyword or turn Photos only off.</p>'
+    : '<p class="small">No places found. Try another search or category.</p>');
   document.getElementById("homePlaces").innerHTML = empty;
   document.getElementById("explorePlaces").innerHTML = empty;
+}
+
+function togglePhotosOnly(){
+  photosOnly = !photosOnly;
+  const button = document.getElementById("photosOnlyButton");
+  button.textContent = photosOnly ? "📷 Photos only: ON" : "📷 Photos only: OFF";
+  button.classList.toggle("active",photosOnly);
+  button.setAttribute("aria-pressed",String(photosOnly));
+  renderPlaces(currentResults);
 }
 
 async function filterPlaces(category,button){
