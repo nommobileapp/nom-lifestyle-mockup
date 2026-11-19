@@ -7,8 +7,6 @@
 <meta name="theme-color" content="#101010">
 <title>NOM — Journey Beyond</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -422,6 +420,7 @@ let searchRequestId = 0;
 let exploreView = "photos";
 let nomMap = null;
 let nomMapMarkers = [];
+let leafletLoadPromise = null;
 
 let savedIds = JSON.parse(localStorage.getItem("nomSaved") || "[]");
 let trips = JSON.parse(localStorage.getItem("nomTrips") || "[]");
@@ -533,18 +532,48 @@ function renderPlaces(list=currentResults){
   updateNomMapMarkers(visibleList);
 }
 
-function toggleExploreView(view){
-  exploreView=view;
+function loadLeaflet(){
+  if(window.L)return Promise.resolve(true);
+  if(leafletLoadPromise)return leafletLoadPromise;
+  leafletLoadPromise=new Promise(resolve=>{
+    if(!document.getElementById("nomLeafletCss")){
+      const link=document.createElement("link");
+      link.id="nomLeafletCss";link.rel="stylesheet";
+      link.href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(link);
+    }
+    const script=document.createElement("script");
+    script.src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+    script.onload=()=>resolve(!!window.L);
+    script.onerror=()=>{leafletLoadPromise=null;resolve(false);};
+    document.head.appendChild(script);
+  });
+  return leafletLoadPromise;
+}
+
+async function toggleExploreView(view){
   const photos=document.getElementById("explorePhotosTab"),map=document.getElementById("exploreMapTab");
   const cards=document.getElementById("explorePlaces"),mapEl=document.getElementById("nomExploreMap");
-  cards.classList.toggle("hidden",view==="map");
-  mapEl.classList.toggle("hidden",view!=="map");
-  photos.classList.toggle("active",view==="photos");map.classList.toggle("active",view==="map");
-  photos.setAttribute("aria-pressed",String(view==="photos"));map.setAttribute("aria-pressed",String(view==="map"));
-  if(view==="map"){
-    initialiseNomMap();
-    setTimeout(()=>{if(nomMap){nomMap.invalidateSize();updateNomMapMarkers(photosOnly?currentResults.filter(hasPlaceImage):currentResults);}},80);
+  if(view==="photos"){
+    exploreView="photos";
+    cards.classList.remove("hidden");mapEl.classList.add("hidden");
+    photos.classList.add("active");map.classList.remove("active");
+    photos.setAttribute("aria-pressed","true");map.setAttribute("aria-pressed","false");
+    return;
   }
+  exploreView="map";
+  cards.classList.add("hidden");mapEl.classList.remove("hidden");
+  photos.classList.remove("active");map.classList.add("active");
+  photos.setAttribute("aria-pressed","false");map.setAttribute("aria-pressed","true");
+  mapEl.innerHTML='<p class="small" style="padding:18px">Loading map…</p>';
+  const loaded=await loadLeaflet();
+  if(!loaded){
+    mapEl.innerHTML='<p class="small" style="padding:18px">The map could not load right now. Your photo discoveries are still available in Photos.</p>';
+    return;
+  }
+  mapEl.innerHTML="";
+  initialiseNomMap();
+  setTimeout(()=>{if(nomMap){nomMap.invalidateSize();updateNomMapMarkers(photosOnly?currentResults.filter(hasPlaceImage):currentResults);}},100);
 }
 
 function initialiseNomMap(){
