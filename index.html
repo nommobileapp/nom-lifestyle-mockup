@@ -262,7 +262,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 <section id="explorePage" class="hidden">
   <div class="eyebrow">EXPLORE</div>
   <h1>Find your next destination.</h1>
-  <input class="search" placeholder="Search places..." oninput="searchPlaces(this.value)">
+  <input class="search" id="exploreSearch" placeholder="Search places..." oninput="searchPlaces(this.value)">
   <div class="categories">
     <button class="category active" onclick="filterPlaces('All',this)">All</button>
     <button class="category" onclick="filterPlaces('Nature',this)">Nature</button>
@@ -379,15 +379,10 @@ let currentUser = null;
 let authMode = "signup";
 let selectedCategory = "All";
 
-/* DEMO PLACES — these are local sample listings */
-const places = [
-  {id:1,name:"Kelingking Beach",location:"Nusa Penida, Bali",category:"Beach",rating:"4.9",price:"Free to visit",image:"https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=85",description:"Dramatic cliffs and turquoise water."},
-  {id:2,name:"Tropical Brunch Club",location:"Canggu, Bali",category:"Food",rating:"4.8",price:"IDR 80k–150k",image:"https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&w=800&q=85",description:"Slow mornings, good coffee, bright plates."},
-  {id:3,name:"Ubud Green Escape",location:"Ubud, Bali",category:"Nature",rating:"4.7",price:"From IDR 50k",image:"https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?auto=format&fit=crop&w=800&q=85",description:"A quiet green escape in the highlands."},
-  {id:4,name:"Sundown Social",location:"Seminyak, Bali",category:"Food",rating:"4.6",price:"IDR 100k–250k",image:"https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=800&q=85",description:"Cocktails and golden-hour energy."},
-  {id:5,name:"Warung Sari",location:"Ubud, Bali",category:"Food",rating:"4.8",price:"IDR 25k–70k",image:"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=85",description:"Local flavours with fresh ingredients."},
-  {id:6,name:"Coastal Hideaway",location:"Uluwatu, Bali",category:"Beach",rating:"4.9",price:"From IDR 900k/night",image:"https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=85",description:"A slow stay with ocean views."}
-];
+/* PLACES — loaded from the Supabase catalogue */
+let places = [];
+let currentResults = [];
+let searchRequestId = 0;
 
 let savedIds = JSON.parse(localStorage.getItem("nomSaved") || "[]");
 let trips = JSON.parse(localStorage.getItem("nomTrips") || "[]");
@@ -411,21 +406,23 @@ function showPage(page){
   window.scrollTo(0,0);
 }
 
-/* PLACE CARDS */
+/* PLACE CARDS — live Supabase catalogue and keyword search */
 function placeCard(place){
   const isSaved = savedIds.includes(place.id);
+  const image = place.image_url || place.image || "";
+  const rating = place.rating ? "★ " + place.rating : "";
 
   return `
     <article class="place">
       <div class="place-image">
-        <img src="${place.image}" alt="${place.name}" loading="lazy">
-        <span class="place-rating">★ ${place.rating}</span>
+        <img src="${image}" alt="${escapeHTML(place.name)}" loading="lazy">
+        ${rating ? `<span class="place-rating">${rating}</span>` : ""}
       </div>
       <div class="place-content">
-        <div class="place-meta">${place.category.toUpperCase()}</div>
-        <h3>${place.name}</h3>
-        <p>${place.description}</p>
-        <p class="small">${place.location} · ${place.price}</p>
+        <div class="place-meta">${escapeHTML(place.category.toUpperCase())}</div>
+        <h3>${escapeHTML(place.name)}</h3>
+        <p>${escapeHTML(place.description)}</p>
+        <p class="small">${escapeHTML(place.location)} · ${escapeHTML(place.price || "")}</p>
         <button class="save-button" onclick="toggleSave(${place.id})">
           ${isSaved ? "♥ Saved" : "♡ Save place"}
         </button>
@@ -434,43 +431,42 @@ function placeCard(place){
   `;
 }
 
-function renderPlaces(list=places){
+function renderPlaces(list=currentResults){
   const html = list.map(placeCard).join("");
-  document.getElementById("homePlaces").innerHTML = html;
-  document.getElementById("explorePlaces").innerHTML = html;
+  const empty = list.length ? html : '<p class="small">No places found. Try another search or category.</p>';
+  document.getElementById("homePlaces").innerHTML = empty;
+  document.getElementById("explorePlaces").innerHTML = empty;
 }
 
-function filterPlaces(category,button){
+async function filterPlaces(category,button){
   selectedCategory = category;
-
+  document.querySelectorAll(".category").forEach(item=>item.classList.remove("active"));
   document.querySelectorAll(".category").forEach(item=>{
-    item.classList.remove("active");
+    if(item.textContent.trim() === category) item.classList.add("active");
   });
-  if(button) button.classList.add("active");
-
-  const filtered = category === "All"
-    ? places
-    : places.filter(place=>place.category === category);
-
-  renderPlaces(filtered);
+  const homeQuery = document.getElementById("homeSearch")?.value || "";
+  const exploreQuery = document.getElementById("exploreSearch")?.value || "";
+  await searchPlaces(homeQuery || exploreQuery);
 }
 
-function searchPlaces(query){
-  const value = query.toLowerCase().trim();
-
-  const filtered = places.filter(place=>{
-    const matchesCategory = selectedCategory === "All" ||
-      place.category === selectedCategory;
-
-    const matchesSearch =
-      place.name.toLowerCase().includes(value) ||
-      place.location.toLowerCase().includes(value) ||
-      place.category.toLowerCase().includes(value);
-
-    return matchesCategory && matchesSearch;
+async function searchPlaces(query){
+  const requestId = ++searchRequestId;
+  const value = (query || "").trim();
+  const {data,error} = await supabaseClient.rpc("search_places",{
+    search_text:value,
+    category_filter:selectedCategory
   });
-
-  renderPlaces(filtered);
+  if(requestId !== searchRequestId) return;
+  if(error){
+    console.error("NOM places search:",error.message);
+    document.getElementById("homePlaces").innerHTML = '<p class="small">Places are temporarily unavailable. Please try again.</p>';
+    document.getElementById("explorePlaces").innerHTML = '<p class="small">Places are temporarily unavailable. Please try again.</p>';
+    return;
+  }
+  currentResults = data || [];
+  places = currentResults.length ? [...new Map([...places,...currentResults].map(p=>[p.id,p])).values()] : places;
+  renderPlaces(currentResults);
+  renderSaved();
 }
 
 function toggleSave(id){
@@ -479,7 +475,6 @@ function toggleSave(id){
   }else{
     savedIds.push(id);
   }
-
   localStorage.setItem("nomSaved",JSON.stringify(savedIds));
   renderPlaces();
   renderSaved();
@@ -720,7 +715,9 @@ async function initialiseApp(){
 }
 
 /* START NOM */
-renderPlaces();
+document.getElementById("homePlaces").innerHTML = '<p class="small">Loading places from NOM...</p>';
+document.getElementById("explorePlaces").innerHTML = '<p class="small">Loading places from NOM...</p>';
+searchPlaces("");
 renderSaved();
 renderTrips();
 initialiseApp();
