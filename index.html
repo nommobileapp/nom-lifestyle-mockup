@@ -545,11 +545,18 @@ async function searchPlaces(query){
   const value = (query || "").trim();
 
   searchDebounce = setTimeout(async ()=>{
-    const [localResult, remoteResult, communityResult] = await Promise.all([
+    const remoteController = new AbortController();
+    const remoteTimeout = setTimeout(()=>remoteController.abort(),8000);
+    const remotePromise = fetch(`${SUPABASE_URL}/functions/v1/nom-place-search?q=${encodeURIComponent(value)}&category=${encodeURIComponent(selectedCategory)}&limit=30`,{
+      headers:{apikey:SUPABASE_KEY},
+      signal:remoteController.signal
+    })
+      .then(async response=>{if(!response.ok)throw new Error("External place search unavailable");return response.json();})
+      .catch(error=>{console.warn("NOM external place search:",error.message);return {places:[]};})
+      .finally(()=>clearTimeout(remoteTimeout));
+
+    const [localResult, communityResult] = await Promise.all([
       supabaseClient.rpc("search_places",{search_text:value,category_filter:selectedCategory}),
-      fetch(`${SUPABASE_URL}/functions/v1/nom-place-search?q=${encodeURIComponent(value)}&category=${encodeURIComponent(selectedCategory)}&limit=30`,{headers:{apikey:SUPABASE_KEY}})
-        .then(async response=>{if(!response.ok)throw new Error("External place search unavailable");return response.json();})
-        .catch(error=>{console.warn("NOM external place search:",error.message);return {places:[]};}),
       supabaseClient.from("community_posts").select("id,title,description,location,category,photo_urls,user_id,username,display_name").eq("status","published").limit(50)
     ]);
 
@@ -559,7 +566,6 @@ async function searchPlaces(query){
     }
 
     const localPlaces = localResult.data || [];
-    const externalPlaces = (remoteResult.places || []).map(place=>({...place,id:place.source_id || place.id,rating:null,price:null}));
     const communityPlaces = (communityResult.data || [])
       .filter(post=>(selectedCategory === "All" || post.category === selectedCategory) &&
         (!value || [post.title,post.description,post.location].some(field=>String(field||"").toLowerCase().includes(value.toLowerCase()))))
@@ -587,24 +593,37 @@ async function searchPlaces(query){
       return [...merged.values()];
     }
 
-    // Local NOM records are applied last, preserving cached photos during live searches.
-    currentResults = mergePlaceRecords([...externalPlaces,...communityPlaces,...localPlaces]);
+    // Render NOM's own catalogue immediately; external search must never block photo cards.
+    currentResults = mergePlaceRecords([...communityPlaces,...localPlaces]);
     places = mergePlaceRecords([...places,...currentResults]);
-
     renderPlaces(currentResults);
     renderSaved();
 
     const message = document.getElementById("placesMessage");
-    if(message && !externalPlaces.length && !localPlaces.length){
-      message.textContent = "No matches yet. Try another keyword or category.";
-    }else if(message){
+    if(message){
+      message.textContent = localPlaces.length || communityPlaces.length
+        ? "Showing places saved in the NOM catalogue."
+        : "No matches yet. Try another keyword or category.";
+    }
+
+    // Add live external discoveries when they arrive, with an 8-second safety timeout.
+    const remoteResult = await remotePromise;
+    if(requestId !== searchRequestId) return;
+    const externalPlaces = (remoteResult.places || []).map(place=>({...place,id:place.source_id || place.id,rating:null,price:null}));
+    currentResults = mergePlaceRecords([...externalPlaces,...communityPlaces,...localPlaces]);
+    places = mergePlaceRecords([...places,...currentResults]);
+    renderPlaces(currentResults);
+    renderSaved();
+
+    if(message){
       message.textContent = externalPlaces.length
         ? "Live discoveries from Geoapify and OpenStreetMap."
-        : "Showing places saved in the NOM catalogue.";
+        : (localPlaces.length || communityPlaces.length
+          ? "Showing places saved in the NOM catalogue."
+          : "No matches yet. Try another keyword or category.");
     }
   },350);
 }
-
 async function importBaliPlaces(){
   const message = document.getElementById("placesMessage");
   const button = document.getElementById("importBaliButton");
