@@ -227,7 +227,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   .cards{grid-template-columns:1fr}
   .hero h1{font-size:29px}
 }
-.work-intro{background:linear-gradient(135deg,#2a201a,#191919);border:1px solid #493020;border-radius:20px;padding:20px;margin:12px 0}.work-demo{background:var(--panel);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin:14px 0}.work-cover{height:175px;position:relative}.work-cover>img{width:100%;height:100%;object-fit:cover}.work-avatar{width:64px!important;height:64px!important;border-radius:50%;border:3px solid var(--panel);position:absolute;bottom:-22px;left:15px}.work-demo-body{padding:28px 15px 15px}.work-role{font-size:11px;color:var(--lime);letter-spacing:1.4px;font-weight:bold}.work-tags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.work-tag{font-size:11px;background:#292929;border:1px solid var(--border);border-radius:20px;padding:6px 9px}.work-gallery{display:grid;grid-template-columns:1fr 1fr;gap:7px}.work-gallery img{width:100%;height:140px;object-fit:cover;border-radius:9px}.work-field{width:100%;background:#111;color:white;border:1px solid var(--border);border-radius:11px;padding:13px;margin:7px 0 13px}.work-media-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0}.work-media-card img,.work-media-card video{width:100%;max-height:260px;object-fit:cover;border-radius:9px}.work-media-card audio{width:100%}.work-progress{height:7px;background:#333;border-radius:9px;overflow:hidden}.work-progress span{display:block;height:100%;width:0;background:var(--lime)}</style>
+.work-intro{background:linear-gradient(135deg,#2a201a,#191919);border:1px solid #493020;border-radius:20px;padding:20px;margin:12px 0}.work-demo{background:var(--panel);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin:14px 0}.work-cover{height:175px;position:relative}.work-cover>img{width:100%;height:100%;object-fit:cover}.work-avatar{width:64px!important;height:64px!important;border-radius:50%;border:3px solid var(--panel);position:absolute;bottom:-22px;left:15px}.work-demo-body{padding:28px 15px 15px}.work-role{font-size:11px;color:var(--lime);letter-spacing:1.4px;font-weight:bold}.work-tags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.work-tag{font-size:11px;background:#292929;border:1px solid var(--border);border-radius:20px;padding:6px 9px}.work-gallery{display:grid;grid-template-columns:1fr 1fr;gap:7px}.work-gallery img{width:100%;height:140px;object-fit:cover;border-radius:9px}.work-field{width:100%;background:#111;color:white;border:1px solid var(--border);border-radius:11px;padding:13px;margin:7px 0 13px}.work-media-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0}.work-media-card img,.work-media-card video{width:100%;max-height:260px;object-fit:cover;border-radius:9px}.work-media-card audio{width:100%}.work-progress{height:7px;background:#333;border-radius:9px;overflow:hidden}.work-progress span{display:block;height:100%;width:0;background:var(--lime)}.nom-work-entry{cursor:pointer;transition:transform .18s ease,border-color .18s ease}.nom-work-entry:active{transform:scale(.985)}.nom-work-entry:focus-visible{outline:2px solid var(--lime);outline-offset:3px}</style>
 </head>
 
 <body>
@@ -310,8 +310,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   </div>
   <h2>Discoveries from the community</h2><div id="communityFeed"><p class="small">Loading community discoveries...</p></div>
   <h2>Your submissions</h2><div id="myCommunitySubmissions"><p class="small">Log in to see your submissions.</p></div>
-  <div class="feed-card"><div class="eyebrow">NOM WORK</div><h3>Work. Travel. Live.</h3>
-    <p>Discover opportunities, offer your skills and connect with people around the world.</p><span class="small">Jobs and services marketplace — coming soon.</span></div>
+  <div class="feed-card nom-work-entry" role="link" tabindex="0" aria-label="Open NOM Work" onclick="showPage(\'work\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();showPage(\'work\')}"><div class="eyebrow">NOM WORK</div><h3>Work. Travel. Live.</h3>
+    <p>Discover opportunities, offer your skills and connect with people around the world.</p><span class="small">Explore NOM Work →</span></div>
 </section>
 
 
@@ -392,7 +392,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 <nav class="bottom-nav">
   <button class="nav-item active" data-page="home" onclick="showPage('home')"><span>⌂</span>Home</button>
   <button class="nav-item" data-page="explore" onclick="showPage('explore')"><span>⌕</span>Explore</button>
-  <button class="nav-item" data-page="work" onclick="showPage(&quot;work&quot;)"><span>✦</span>Work</button><button class="nav-item" data-page="community" onclick="showPage('community')"><span>◎</span>Community</button>
+  <button class="nav-item" data-page="community" onclick="showPage('community')"><span>◎</span>Community</button>
   <button class="nav-item" data-page="saved" onclick="showPage('saved')"><span>♡</span>Saved</button>
   <button class="nav-item" data-page="trip" onclick="showPage('trip')"><span>✈</span>My Trip</button>
 </nav>
