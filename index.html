@@ -450,7 +450,7 @@ function placeCard(place){
         <h3>${escapeHTML(place.name)}</h3>
         <p>${escapeHTML(place.description)}</p>
         <p class="small">${escapeHTML(place.location)} · ${escapeHTML(place.price || "")}</p>
-        <button class="save-button" onclick="toggleSave(${place.id})">
+        <button class="save-button" onclick='toggleSave("${escapeHTML(String(place.id))}")'>
           ${isSaved ? "♥ Saved" : "♡ Save place"}
         </button>
       </div>
