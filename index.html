@@ -515,12 +515,15 @@ async function searchPlaces(query){
 
     const localPlaces = localResult.data || [];
     const externalPlaces = (remoteResult.places || []).map(place=>({...place,id:place.source_id || place.id,rating:null,price:null}));
-    const communityPlaces = (communityResult.data || []).map(post=>({
-      id:"community-" + post.id,source_id:"community-" + post.id,name:post.title,
-      description:post.description,location:post.location,category:post.category,
-      image_url:(post.photo_urls || [])[0] || null,image:(post.photo_urls || [])[0] || null,
-      rating:null,price:null
-    }));
+    const communityPlaces = (communityResult.data || [])
+      .filter(post=>(selectedCategory === "All" || post.category === selectedCategory) &&
+        (!value || [post.title,post.description,post.location].some(field=>String(field||"").toLowerCase().includes(value.toLowerCase()))))
+      .map(post=>({
+        id:"community-" + post.id,source_id:"community-" + post.id,name:post.title,
+        description:post.description,location:post.location,category:post.category,
+        image_url:(post.photo_urls || [])[0] || null,image:(post.photo_urls || [])[0] || null,
+        rating:null,price:null
+      }));
 
     function mergePlaceRecords(records){
       const merged = new Map();
