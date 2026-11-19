@@ -43,6 +43,10 @@ header{
 }
 .logo span{color:var(--orange)}
 .header-account{
+  max-width:150px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
   background:var(--panel2);
   color:var(--orange);
   border:1px solid var(--border);
@@ -329,6 +333,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 
   <div class="panel hidden" id="loggedInPanel">
     <h3 id="loggedInName">NOM Member</h3>
+    <p class="small" id="loggedInUsername"></p>
     <p id="loggedInEmail"></p>
     <p class="small">Your account is connected to NOM.</p>
     <button class="secondary" onclick="logout()">Log out</button>
@@ -655,10 +660,13 @@ function updateProfile(){
     document.getElementById("loggedInName").textContent =
       metadata.display_name || metadata.username || "NOM Member";
 
+    document.getElementById("loggedInUsername").textContent =
+      metadata.username ? "@" + metadata.username : "";
+
     document.getElementById("loggedInEmail").textContent =
       currentUser.email || "";
 
-    accountStatus.textContent = "NOM MEMBER";
+    accountStatus.textContent = metadata.username ? "@" + metadata.username : "NOM MEMBER";
     hideAuth();
   }else{
     profileInfo.classList.remove("hidden");
