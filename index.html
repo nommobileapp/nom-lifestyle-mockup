@@ -213,6 +213,13 @@ p{color:var(--muted);line-height:1.5}
 .hidden{display:none!important}
 .small{font-size:12px;color:var(--muted)}
 hr{border:0;border-top:1px solid var(--border);margin:18px 0}
+.community-upload input,.community-upload textarea,.community-upload select{width:100%;background:#111;color:white;border:1px solid var(--border);border-radius:11px;padding:13px;margin:7px 0 13px}
+.community-upload input[type=file]{padding:11px;font-size:12px}
+.community-post{background:var(--panel);border:1px solid var(--border);border-radius:17px;padding:14px;margin:12px 0;overflow:hidden}
+.community-post img{width:100%;max-height:280px;object-fit:cover;border-radius:12px;display:block}
+.community-post .post-meta{font-size:11px;color:var(--lime);margin:9px 0 4px}
+.community-post .post-author{font-size:12px;color:var(--orange)}
+.community-post .post-status{font-size:11px;color:var(--lime);margin-top:8px}
 @media(max-width:380px){
   .cards{grid-template-columns:1fr}
   .hero h1{font-size:29px}
@@ -282,20 +289,26 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 </section>
 
 <section id="communityPage" class="hidden">
-  <div class="eyebrow">NOM COMMUNITY</div>
-  <h1>Stories without borders.</h1>
-  <p>A place to connect, share and inspire.</p>
-  <div class="feed-card">
-    <h3>Welcome to NOM Community</h3>
-    <p>Share your journey, meet fellow nomads and discover new perspectives.</p>
-    <p class="small">Community posting will be connected to user accounts in a later development step.</p>
+  <div class="eyebrow">NOM COMMUNITY</div><h1>Stories without borders.</h1>
+  <p>Discover places shared by NOM members. Your discoveries can inspire someone's next journey.</p>
+  <div class="feed-card"><div class="eyebrow">SHARE WITH NOM</div><h3>Found somewhere special?</h3>
+    <p>Upload a place and your own photographs. Help the NOM community discover it.</p>
+    <button class="primary" type="button" onclick="showCommunityComposer()">＋ Share a place</button></div>
+  <div class="form-card community-upload hidden" id="communityComposer">
+    <h2>Share a place</h2><p class="small">Upload 1–4 photos (JPG, PNG or WebP, max 8 MB each).</p>
+    <label for="communityTitle">Place name</label><input id="communityTitle" maxlength="100" placeholder="e.g. A hidden beach in Bali">
+    <label for="communityLocation">Location</label><input id="communityLocation" maxlength="160" placeholder="Town, island or country">
+    <label for="communityCategory">Category</label><select id="communityCategory"><option>Nature</option><option>Food</option><option>Beach</option><option>Culture</option><option>Stay</option><option>Experience</option></select>
+    <label for="communityDescription">Your story / description</label><textarea id="communityDescription" rows="4" maxlength="1200" placeholder="What makes this place worth discovering?"></textarea>
+    <label for="communityPhotos">Your photos</label><input id="communityPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+    <button class="primary" id="communitySubmit" type="button" onclick="submitCommunityPlace()">Submit place</button>
+    <button class="secondary" type="button" onclick="hideCommunityComposer()">Cancel</button>
+    <div class="message" id="communityMessage"></div><p class="small">Submissions are reviewed before appearing publicly in Explore and Community.</p>
   </div>
-  <div class="feed-card">
-    <div class="eyebrow">NOM WORK</div>
-    <h3>Work. Travel. Live.</h3>
-    <p>Discover opportunities, offer your skills and connect with people around the world.</p>
-    <span class="small">Jobs and services marketplace — coming soon.</span>
-  </div>
+  <h2>Discoveries from the community</h2><div id="communityFeed"><p class="small">Loading community discoveries...</p></div>
+  <h2>Your submissions</h2><div id="myCommunitySubmissions"><p class="small">Log in to see your submissions.</p></div>
+  <div class="feed-card"><div class="eyebrow">NOM WORK</div><h3>Work. Travel. Live.</h3>
+    <p>Discover opportunities, offer your skills and connect with people around the world.</p><span class="small">Jobs and services marketplace — coming soon.</span></div>
 </section>
 
 <section id="savedPage" class="hidden">
@@ -412,6 +425,7 @@ function showPage(page){
   if(page === "saved") renderSaved();
   if(page === "trip") renderTrips();
   if(page === "profile") updateProfile();
+  if(page === "community") loadCommunityFeed();
   window.scrollTo(0,0);
 }
 
@@ -436,7 +450,7 @@ function placeCard(place){
         <h3>${escapeHTML(place.name)}</h3>
         <p>${escapeHTML(place.description)}</p>
         <p class="small">${escapeHTML(place.location)} · ${escapeHTML(place.price || "")}</p>
-        <button class="save-button" onclick="toggleSave(${place.id})">
+        <button class="save-button" onclick='toggleSave("${escapeHTML(String(place.id))}")'>
           ${isSaved ? "♥ Saved" : "♡ Save place"}
         </button>
       </div>
@@ -486,20 +500,12 @@ async function searchPlaces(query){
   const value = (query || "").trim();
 
   searchDebounce = setTimeout(async ()=>{
-    const [localResult, remoteResult] = await Promise.all([
-      supabaseClient.rpc("search_places",{
-        search_text:value,
-        category_filter:selectedCategory
-      }),
-      fetch(`${SUPABASE_URL}/functions/v1/nom-place-search?q=${encodeURIComponent(value)}&category=${encodeURIComponent(selectedCategory)}&limit=30`,{
-        headers:{apikey:SUPABASE_KEY}
-      }).then(async response=>{
-        if(!response.ok) throw new Error("External place search unavailable");
-        return response.json();
-      }).catch(error=>{
-        console.warn("NOM external place search:",error.message);
-        return {places:[]};
-      })
+    const [localResult, remoteResult, communityResult] = await Promise.all([
+      supabaseClient.rpc("search_places",{search_text:value,category_filter:selectedCategory}),
+      fetch(`${SUPABASE_URL}/functions/v1/nom-place-search?q=${encodeURIComponent(value)}&category=${encodeURIComponent(selectedCategory)}&limit=30`,{headers:{apikey:SUPABASE_KEY}})
+        .then(async response=>{if(!response.ok)throw new Error("External place search unavailable");return response.json();})
+        .catch(error=>{console.warn("NOM external place search:",error.message);return {places:[]};}),
+      supabaseClient.from("community_posts").select("id,title,description,location,category,photo_urls,user_id,username,display_name").eq("status","published").limit(50)
     ]);
 
     if(requestId !== searchRequestId) return;
@@ -508,12 +514,16 @@ async function searchPlaces(query){
     }
 
     const localPlaces = localResult.data || [];
-    const externalPlaces = (remoteResult.places || []).map(place=>({
-      ...place,
-      id:place.source_id || place.id,
-      rating:null,
-      price:null
-    }));
+    const externalPlaces = (remoteResult.places || []).map(place=>({...place,id:place.source_id || place.id,rating:null,price:null}));
+    const communityPlaces = (communityResult.data || [])
+      .filter(post=>(selectedCategory === "All" || post.category === selectedCategory) &&
+        (!value || [post.title,post.description,post.location].some(field=>String(field||"").toLowerCase().includes(value.toLowerCase()))))
+      .map(post=>({
+        id:"community-" + post.id,source_id:"community-" + post.id,name:post.title,
+        description:post.description,location:post.location,category:post.category,
+        image_url:(post.photo_urls || [])[0] || null,image:(post.photo_urls || [])[0] || null,
+        rating:null,price:null
+      }));
 
     function mergePlaceRecords(records){
       const merged = new Map();
@@ -533,7 +543,7 @@ async function searchPlaces(query){
     }
 
     // Local NOM records are applied last, preserving cached photos during live searches.
-    currentResults = mergePlaceRecords([...externalPlaces,...localPlaces]);
+    currentResults = mergePlaceRecords([...externalPlaces,...communityPlaces,...localPlaces]);
     places = mergePlaceRecords([...places,...currentResults]);
 
     renderPlaces(currentResults);
@@ -591,6 +601,55 @@ async function importBaliPlaces(){
     button.disabled = false;
     button.textContent = "Save up to 100 Bali places to NOM";
   }
+}
+
+
+async function showCommunityComposer(){
+  if(!currentUser){showPage("profile");showAuth("signup");return;}
+  document.getElementById("communityComposer").classList.remove("hidden");
+  document.getElementById("communityMessage").textContent="";
+  document.getElementById("communityComposer").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function hideCommunityComposer(){document.getElementById("communityComposer").classList.add("hidden");}
+function communityPostCard(post,own=false){
+  const photos=Array.isArray(post.photo_urls)?post.photo_urls:[],photo=photos[0]||"";
+  const status=post.status==="published"?"Published on NOM":post.status==="rejected"?"Not approved":"Pending review";
+  return `<article class="community-post">${photo?`<img src="${escapeHTML(photo)}" alt="${escapeHTML(post.title)}" loading="lazy">`:""}
+    <div class="post-meta">${escapeHTML(post.category||"DISCOVERY")} · ${escapeHTML(post.location||"")}</div>
+    <h3>${escapeHTML(post.title)}</h3><p>${escapeHTML(post.description)}</p>
+    <div class="post-author">Shared by ${escapeHTML(post.username?"@"+post.username:(post.display_name||"NOM member"))}</div>
+    ${own?`<div class="post-status">${status}</div>`:""}${photos.length>1?`<p class="small">${photos.length} photos shared</p>`:""}</article>`;
+}
+async function loadCommunityFeed(){
+  const feed=document.getElementById("communityFeed"),mine=document.getElementById("myCommunitySubmissions");if(!feed||!mine)return;
+  const {data:published,error}=await supabaseClient.from("community_posts").select("id,title,description,location,category,photo_urls,username,display_name,status,created_at").eq("status","published").order("created_at",{ascending:false}).limit(40);
+  feed.innerHTML=error?'<p class="small">Community discoveries are temporarily unavailable.</p>':published?.length?published.map(p=>communityPostCard(p)).join(""):'<p class="small">No community discoveries yet. Be the first to share a place.</p>';
+  if(!currentUser){mine.innerHTML='<p class="small">Log in to see the places you have submitted.</p>';return;}
+  const {data:own,error:ownError}=await supabaseClient.from("community_posts").select("id,title,description,location,category,photo_urls,username,display_name,status,created_at").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(20);
+  mine.innerHTML=ownError?'<p class="small">Could not load your submissions.</p>':own?.length?own.map(p=>communityPostCard(p,true)).join(""):'<p class="small">You have not shared a place yet.</p>';
+}
+async function submitCommunityPlace(){
+  if(!currentUser){showCommunityComposer();return;}
+  const title=document.getElementById("communityTitle").value.trim(),location=document.getElementById("communityLocation").value.trim(),category=document.getElementById("communityCategory").value,description=document.getElementById("communityDescription").value.trim(),files=Array.from(document.getElementById("communityPhotos").files||[]),message=document.getElementById("communityMessage"),button=document.getElementById("communitySubmit");
+  if(title.length<3||location.length<2||description.length<10){message.textContent="Please add a place name, location and a description of at least 10 characters.";return;}
+  if(files.length<1||files.length>4){message.textContent="Please choose between 1 and 4 photos.";return;}
+  const allowed=["image/jpeg","image/png","image/webp"];if(files.some(file=>!allowed.includes(file.type)||file.size>8*1024*1024)){message.textContent="Use JPG, PNG or WebP photos. Each photo must be 8 MB or smaller.";return;}
+  button.disabled=true;button.textContent="Uploading photos...";message.textContent="Uploading your photos to NOM...";const uploaded=[];
+  try{
+    const {data:profile}=await supabaseClient.from("profiles").select("username,display_name").eq("id",currentUser.id).maybeSingle(),meta=currentUser.user_metadata||{};
+    const username=profile?.username||meta.username||"nom-member",displayName=profile?.display_name||meta.display_name||username,photoUrls=[];
+    for(const file of files){
+      const ext=file.type==="image/jpeg"?"jpg":file.type.split("/")[1],path=currentUser.id+"/"+crypto.randomUUID()+"."+ext;
+      const {data:up,error:upError}=await supabaseClient.storage.from("community-photos").upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type});
+      if(upError)throw upError;uploaded.push(up.path);photoUrls.push(supabaseClient.storage.from("community-photos").getPublicUrl(up.path).data.publicUrl);
+    }
+    message.textContent="Photos uploaded. Sending your place for review...";
+    const {error}=await supabaseClient.from("community_posts").insert({user_id:currentUser.id,username,display_name:displayName,title,description,location,category,photo_urls:photoUrls});
+    if(error)throw error;
+    document.getElementById("communityTitle").value="";document.getElementById("communityLocation").value="";document.getElementById("communityDescription").value="";document.getElementById("communityPhotos").value="";
+    message.textContent="Your place has been submitted! It will appear after review.";await loadCommunityFeed();
+  }catch(error){if(uploaded.length)await supabaseClient.storage.from("community-photos").remove(uploaded);message.textContent=error.message||"Upload failed. Please try again.";}
+  finally{button.disabled=false;button.textContent="Submit place";}
 }
 
 function toggleSave(id){
