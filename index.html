@@ -190,6 +190,7 @@ p{color:var(--muted);line-height:1.5}
 }
 .form-card label{font-size:12px;color:var(--muted)}
 .form-card button{margin:8px 5px 5px 0}
+.avatar-upload{display:flex;flex-direction:column;gap:9px;margin:12px 0 16px}.avatar-preview{width:82px;height:82px;border-radius:50%;object-fit:cover;border:2px solid var(--orange);background:#242424}.account-avatar{width:76px;height:76px;border-radius:50%;object-fit:cover;border:2px solid var(--orange);margin:4px 0 10px}
 .message{font-size:13px;min-height:20px;color:var(--lime)}
 .bottom-nav{
   position:fixed;
@@ -361,6 +362,12 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     <p id="authDescription">Join the NOM community.</p>
 
     <div id="signupFields">
+      <label>Profile picture (optional)</label>
+      <div class="avatar-upload">
+        <img id="avatarPreview" class="avatar-preview hidden" alt="Profile picture preview">
+        <input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Choose profile picture" onchange="handleRegistrationAvatar(this)">
+        <p class="small">Choose a JPG, PNG or WebP image. NOM resizes it for your profile (max 2 MB after processing).</p>
+      </div>
       <label>Display name</label>
       <input id="displayName" autocomplete="name" placeholder="Your name">
       <label>Username</label>
@@ -381,6 +388,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   </div>
 
   <div class="panel hidden" id="loggedInPanel">
+    <img id="loggedInAvatar" class="account-avatar hidden" alt="Your NOM profile picture">
     <h3 id="loggedInName">@username</h3>
     <p class="small">Your NOM account</p>
     <button class="secondary" onclick="logout()">Log out</button>
@@ -1081,6 +1089,52 @@ function updateAuthForm(){
     signup ? "Already have an account? Log in" : "New to NOM? Create an account";
 }
 
+async function handleRegistrationAvatar(input){
+  const file=input.files?.[0],preview=document.getElementById("avatarPreview");
+  if(!file){preview.classList.add("hidden");preview.removeAttribute("src");return;}
+  if(!["image/jpeg","image/png","image/webp"].includes(file.type)){input.value="";alert("Please choose a JPG, PNG or WebP image.");return;}
+  if(file.size>8*1024*1024){input.value="";alert("Please choose an image smaller than 8 MB.");return;}
+  try{
+    const dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error("Could not read that image."));reader.readAsDataURL(file);});
+    const image=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error("This image could not be opened."));img.src=dataUrl;});
+    const size=320,canvas=document.createElement("canvas");canvas.width=size;canvas.height=size;
+    const ctx=canvas.getContext("2d"),crop=Math.min(image.width,image.height),sx=(image.width-crop)/2,sy=(image.height-crop)/2;
+    ctx.drawImage(image,sx,sy,crop,crop,0,0,size,size);
+    const compressed=canvas.toDataURL("image/jpeg",0.82);
+    localStorage.setItem("nomPendingRegistrationAvatar",JSON.stringify({email:"",dataUrl:compressed,createdAt:Date.now()}));
+    preview.src=compressed;preview.classList.remove("hidden");
+  }catch(error){input.value="";preview.classList.add("hidden");alert(error.message||"Could not prepare that image.");}
+}
+
+let nomAvatarUploadInProgress=false;
+async function uploadPendingRegistrationAvatar(user){
+  if(!user||!supabaseClient||nomAvatarUploadInProgress)return;
+  let pending;try{pending=JSON.parse(localStorage.getItem("nomPendingRegistrationAvatar")||"null");}catch(_){pending=null;}
+  if(!pending?.dataUrl)return;
+  if(pending.email&&pending.email.toLowerCase()!==(user.email||"").toLowerCase())return;
+  nomAvatarUploadInProgress=true;let path=null;
+  try{
+    const blob=await (await fetch(pending.dataUrl)).blob();
+    if(blob.size>2097152)throw new Error("Profile picture is larger than the 2 MB limit after resizing.");
+    path=user.id+"/"+crypto.randomUUID()+".jpg";
+    const {error:uploadError}=await supabaseClient.storage.from("avatars").upload(path,blob,{contentType:"image/jpeg",cacheControl:"3600",upsert:false});
+    if(uploadError)throw uploadError;
+    const avatarUrl=supabaseClient.storage.from("avatars").getPublicUrl(path).data.publicUrl;
+    const {error:profileError}=await supabaseClient.from("profiles").update({avatar_url:avatarUrl,updated_at:new Date().toISOString()}).eq("id",user.id);
+    if(profileError){await supabaseClient.storage.from("avatars").remove([path]);throw profileError;}
+    localStorage.removeItem("nomPendingRegistrationAvatar");
+    await loadAccountAvatar(user.id);
+    const message=document.getElementById("authMessage");if(message)message.textContent="Profile picture saved to your NOM account.";
+  }finally{nomAvatarUploadInProgress=false;}
+}
+
+async function loadAccountAvatar(userId){
+  const image=document.getElementById("loggedInAvatar");if(!image||!userId)return;
+  const {data,error}=await supabaseClient.from("profiles").select("avatar_url").eq("id",userId).maybeSingle();
+  if(error||!data?.avatar_url){image.classList.add("hidden");image.removeAttribute("src");return;}
+  image.src=data.avatar_url;image.classList.remove("hidden");
+}
+
 async function submitAuth(){
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
@@ -1106,6 +1160,8 @@ async function submitAuth(){
     if(authMode === "signup"){
       const displayName = document.getElementById("displayName").value.trim();
       const username = document.getElementById("username").value.trim();
+      const pendingAvatar=localStorage.getItem("nomPendingRegistrationAvatar");
+      if(pendingAvatar){try{const parsed=JSON.parse(pendingAvatar);parsed.email=email.toLowerCase();localStorage.setItem("nomPendingRegistrationAvatar",JSON.stringify(parsed));}catch(_){}}
 
       if(!displayName || !username){
         message.textContent = "Please enter your name and username.";
@@ -1124,14 +1180,15 @@ async function submitAuth(){
         }
       });
 
-      if(error) throw error;
+      if(error){localStorage.removeItem("nomPendingRegistrationAvatar");throw error;}
 
       if(data.session){
         currentUser = data.user;
         message.textContent = "Account created successfully.";
         updateProfile();
+        await uploadPendingRegistrationAvatar(data.user);
       }else{
-        message.textContent = "Registration received. Please check your email to confirm your account.";
+        message.textContent = "Registration received. Please confirm your email. Your selected profile picture will be added when you sign in after confirmation.";
       }
 
     }else{
@@ -1145,6 +1202,7 @@ async function submitAuth(){
       currentUser = data.user;
       message.textContent = "Login successful.";
       updateProfile();
+      await uploadPendingRegistrationAvatar(data.user);
     }
 
   }catch(error){
@@ -1203,14 +1261,14 @@ async function initialiseApp(){
 
     currentUser = data.session ? data.session.user : null;
     updateProfile();
-    if(currentUser)startNomNotificationListener();
+    if(currentUser){startNomNotificationListener();uploadPendingRegistrationAvatar(currentUser).catch(error=>console.warn("NOM avatar upload:",error.message));}
 
     supabaseClient.auth.onAuthStateChange((_event,session)=>{
       const previousUserId=currentUser?.id||null;
       currentUser = session ? session.user : null;
       const nextUserId=currentUser?.id||null;
       updateProfile();
-      if(currentUser)startNomNotificationListener();else{if(nomNotificationChannel){supabaseClient.removeChannel(nomNotificationChannel);nomNotificationChannel=null;}renderNomUnreadBadges(0);}
+      if(currentUser){startNomNotificationListener();uploadPendingRegistrationAvatar(currentUser).catch(error=>console.warn("NOM avatar upload:",error.message));}else{if(nomNotificationChannel){supabaseClient.removeChannel(nomNotificationChannel);nomNotificationChannel=null;}renderNomUnreadBadges(0);}
       if(previousUserId!==nextUserId){
         const ownMedia=document.getElementById("workPortfolioMedia");
         const publicPanel=document.getElementById("workPublicPortfolio");
