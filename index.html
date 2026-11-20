@@ -135,7 +135,7 @@ p{color:var(--muted);line-height:1.5}
   overflow:hidden;
   background:linear-gradient(135deg,#4b3425,#1e2926);
 }
-.place-image img{
+.place-video-preview{display:block;width:100%;max-height:190px;object-fit:contain;background:#080808;border-radius:10px;margin:7px 0}.place-image img{
   width:100%;
   height:100%;
   display:block;
@@ -656,6 +656,10 @@ function placeCard(place){
   const photoCredit = place.image_attribution
     ? `<p class="small photo-credit">Photo: ${escapeHTML(place.image_attribution)} · ${escapeHTML(place.image_license || "Licence details unavailable")}${place.image_source_url ? ` · <a href="${escapeHTML(place.image_source_url)}" target="_blank" rel="noopener" style="color:var(--orange)">Source</a>` : ""}</p>`
     : "";
+  const videoPreviews = (Array.isArray(place.video_urls)?place.video_urls:[])
+    .filter(url=>typeof url==="string" && (url.startsWith("https://") || url.startsWith("http://")))
+    .map(url=>`<video class="place-video-preview" controls playsinline preload="metadata" src="${escapeHTML(url)}" onclick="event.stopPropagation()"></video>`)
+    .join("");
 
   return `
     <article class="place" role="button" tabindex="0" data-detail-id="${escapeHTML(String(place.id))}" onclick="openPlaceDetail(this.dataset.detailId)" onkeydown="if(event.key==='Enter'){openPlaceDetail(this.dataset.detailId)}">
@@ -663,6 +667,7 @@ function placeCard(place){
         ${image ? `<img src="${escapeHTML(image)}" alt="${escapeHTML(place.name)}" loading="lazy">` : `<div style="height:100%;display:grid;place-items:center;color:var(--lime);font-size:12px;letter-spacing:2px">NOM DISCOVERY</div>`}
         ${rating ? `<span class="place-rating">${rating}</span>` : ""}
       </div>
+      ${videoPreviews}
       ${photoCredit}
       <div class="place-content">
         <div class="place-meta">${escapeHTML(String(place.category || "DISCOVERY").toUpperCase())}</div>
@@ -895,9 +900,11 @@ function hideCommunityComposer(){document.getElementById("communityComposer").cl
 function communityPostCard(post,own=false){
   const photos=Array.isArray(post.photo_urls)?post.photo_urls:[],videos=Array.isArray(post.video_urls)?post.video_urls:[],photo=photos[0]||"",video=videos[0]||"";
   nomDetailItems[String(post.id)]={id:post.id,kind:"community",name:post.title,description:post.description,location:post.location,category:post.category,photos,videos,author:post.username?"@"+post.username:(post.display_name||"NOM member")};
-  const status="Published on NOM",preview=photo?'<img src="'+escapeHTML(photo)+'" alt="'+escapeHTML(post.title)+'" loading="lazy">':video?'<video controls playsinline preload="metadata" src="'+escapeHTML(video)+'" onclick="event.stopPropagation()"></video>':"";
+  const status="Published on NOM";
+  const photoPreviews=photos.map(url=>'<img src="'+escapeHTML(url)+'" alt="'+escapeHTML(post.title)+'" loading="lazy">').join("");
+  const videoPreviews=videos.map(url=>'<video controls playsinline preload="metadata" src="'+escapeHTML(url)+'" onclick="event.stopPropagation()"></video>').join("");
   const mediaCount=photos.length+videos.length;
-  return '<article class="community-post" role="button" tabindex="0" data-detail-id="'+escapeHTML(String(post.id))+'" onclick="openPlaceDetail(this.dataset.detailId)" onkeydown="if(event.key===\'Enter\'){openPlaceDetail(this.dataset.detailId)}">'+preview+
+  return '<article class="community-post" role="button" tabindex="0" data-detail-id="'+escapeHTML(String(post.id))+'" onclick="openPlaceDetail(this.dataset.detailId)" onkeydown="if(event.key===\'Enter\'){openPlaceDetail(this.dataset.detailId)}">'+photoPreviews+videoPreviews+
     '<div class="post-meta">'+escapeHTML(post.category||"DISCOVERY")+' · '+escapeHTML(post.location||"")+'</div>'+
     '<h3>'+escapeHTML(post.title)+'</h3><p>'+escapeHTML(post.description)+'</p>'+
     '<div class="post-author">Shared by '+escapeHTML(post.username?"@"+post.username:(post.display_name||"NOM member"))+'</div>'+
