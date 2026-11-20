@@ -679,7 +679,7 @@ function placeCard(place){
 
 function hasPlaceImage(place){
   const image = place.image_url || place.image || "";
-  return typeof image === "string" && (image.trim().startsWith("https://") || image.trim().startsWith("http://"));
+  return (typeof image === "string" && (image.trim().startsWith("https://") || image.trim().startsWith("http://"))) || (Array.isArray(place.video_urls) && place.video_urls.some(url=>typeof url==="string" && /^https?:\\/\\//.test(url)));
 }
 
 function renderPlaces(list=currentResults){
