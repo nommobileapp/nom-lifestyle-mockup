@@ -44,19 +44,25 @@ header{
 }
 .logo span{color:var(--orange)}
 .header-account{
-  max-width:150px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  max-width:190px;
+  min-width:0;
   background:var(--panel2);
   color:var(--orange);
   border:1px solid var(--border);
-  border-radius:22px;
-  padding:9px 13px;
+  border-radius:24px;
+  padding:5px 11px 5px 6px;
   font-size:12px;
   font-weight:bold;
   letter-spacing:.2px;
 }
+.header-account-label{max-width:125px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.header-account-avatar,.header-account-fallback{width:30px;height:30px;min-width:30px;border-radius:50%;object-fit:cover;border:1px solid var(--orange);background:#292929}
+.header-account-fallback{display:inline-flex;align-items:center;justify-content:center;color:var(--lime);font-size:11px;font-weight:900}
+.header-account-avatar.hidden,.header-account-fallback.hidden{display:none!important}
+@media(max-width:380px){.header-account{max-width:155px}.header-account-label{max-width:90px}}
 main{padding:10px 18px;max-width:760px;margin:auto}
 h1{font-size:29px;line-height:1.15;margin:10px 0}
 h2{font-size:21px;margin:25px 0 14px}
@@ -235,7 +241,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 
 <header>
   <div class="logo">N<span>O</span>M</div>
-  <button class="header-account" id="accountStatus" type="button" onclick="showPage('profile')">Log in / Join</button>
+  <button class="header-account" id="accountStatus" type="button" onclick="showPage('profile')"><img class="header-account-avatar hidden" id="headerAccountAvatar" alt=""><span class="header-account-fallback hidden" id="headerAvatarFallback" aria-hidden="true">N</span><span class="header-account-label" id="headerAccountLabel">Log in / Join</span></button>
 </header>
 
 <main>
@@ -1156,10 +1162,29 @@ async function uploadPendingRegistrationAvatar(user){
 }
 
 async function loadAccountAvatar(userId){
-  const image=document.getElementById("loggedInAvatar");if(!image||!userId)return;
+  const image=document.getElementById("loggedInAvatar"),headerImage=document.getElementById("headerAccountAvatar"),fallback=document.getElementById("headerAvatarFallback");
+  if(!userId){
+    [image,headerImage].forEach(el=>{if(el){el.classList.add("hidden");el.removeAttribute("src");}});
+    fallback?.classList.add("hidden");
+    return;
+  }
   const {data,error}=await supabaseClient.from("profiles").select("avatar_url").eq("id",userId).maybeSingle();
-  if(error||!data?.avatar_url){image.classList.add("hidden");image.removeAttribute("src");return;}
-  image.src=data.avatar_url;image.classList.remove("hidden");
+  const avatarUrl=!error&&data?.avatar_url&&/^https:\/\//i.test(data.avatar_url)?data.avatar_url:"";
+  if(image){
+    if(avatarUrl){image.src=avatarUrl;image.classList.remove("hidden");}
+    else{image.classList.add("hidden");image.removeAttribute("src");}
+  }
+  if(headerImage&&fallback){
+    if(avatarUrl){
+      headerImage.onerror=()=>{headerImage.classList.add("hidden");headerImage.removeAttribute("src");fallback.classList.remove("hidden");};
+      headerImage.onload=()=>fallback.classList.add("hidden");
+      headerImage.src=avatarUrl;
+      headerImage.classList.remove("hidden");
+      fallback.classList.add("hidden");
+    }else{
+      headerImage.classList.add("hidden");headerImage.removeAttribute("src");fallback.classList.remove("hidden");
+    }
+  }
 }
 
 let existingAvatarDataUrl=null;
@@ -1282,7 +1307,9 @@ async function submitAuth(){
 function updateProfile(){
   const profileInfo = document.getElementById("profileInfo");
   const loggedInPanel = document.getElementById("loggedInPanel");
-  const accountStatus = document.getElementById("accountStatus");
+  const accountLabel = document.getElementById("headerAccountLabel");
+  const headerImage = document.getElementById("headerAccountAvatar");
+  const fallback = document.getElementById("headerAvatarFallback");
 
   if(currentUser){
     profileInfo.classList.add("hidden");
@@ -1291,13 +1318,19 @@ function updateProfile(){
     const metadata = currentUser.user_metadata || {};
     const publicUsername = metadata.username ? "@" + metadata.username : "NOM MEMBER";
     document.getElementById("loggedInName").textContent = publicUsername;
-    accountStatus.textContent = publicUsername;
+    accountLabel.textContent = publicUsername;
+    fallback.textContent = (metadata.username || "N").charAt(0).toUpperCase();
+    fallback.classList.remove("hidden");
+    headerImage.classList.add("hidden");
     setTimeout(()=>loadAccountAvatar(currentUser.id),0);
     hideAuth();
   }else{
     profileInfo.classList.remove("hidden");
     loggedInPanel.classList.add("hidden");
-    accountStatus.textContent = "Log in / Join";
+    accountLabel.textContent = "Log in / Join";
+    headerImage.classList.add("hidden");
+    headerImage.removeAttribute("src");
+    fallback.classList.add("hidden");
   }
 }
 
