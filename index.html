@@ -609,7 +609,7 @@ async function loadNomInbox(){
  if(!data?.length){target.innerHTML='<p class="small">No conversations yet. Choose Message on a member card to start one.</p>';await refreshNomUnreadCount();return;}
  const rows=await Promise.all(data.map(async convo=>{
   const peer=convo.member_one===currentUser.id?convo.member_two:convo.member_one;
-  const [profile,last,unread]=await Promise.all([
+  const [profile,avatarProfile,last,unread]=await Promise.all([
    supabaseClient.from("work_profiles").select("username,headline").eq("user_id",peer).maybeSingle(),
    supabaseClient.from("profiles").select("avatar_url").eq("id",peer).maybeSingle(),
    supabaseClient.from("nom_messages").select("body,created_at").eq("conversation_id",convo.id).order("created_at",{ascending:false}).limit(1).maybeSingle(),
