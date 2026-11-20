@@ -663,7 +663,7 @@ function placeCard(place){
       </div>
       ${photoCredit}
       <div class="place-content">
-        <div class="place-meta">${escapeHTML(place.category.toUpperCase())}</div>
+        <div class="place-meta">${escapeHTML(String(place.category || "DISCOVERY").toUpperCase())}</div>
         <h3>${escapeHTML(place.name)}</h3>
         <p>${escapeHTML(place.description)}</p>
         <p class="small">${escapeHTML(place.location)} · ${escapeHTML(place.price || "")}</p>
@@ -681,13 +681,22 @@ function hasPlaceImage(place){
 }
 
 function renderPlaces(list=currentResults){
-  const visibleList = photosOnly ? list.filter(hasPlaceImage) : list;
-  const html = visibleList.map(placeCard).join("");
-  const empty = visibleList.length ? html : (photosOnly
+  const safeList=Array.isArray(list)?list.filter(Boolean):[];
+  const visibleList=photosOnly?safeList.filter(hasPlaceImage):safeList;
+  let html="";
+  try{
+    html=visibleList.map(placeCard).join("");
+  }catch(error){
+    console.error("NOM place card rendering failed:",error);
+    html='<p class="small">Some place details could not be displayed. Refresh NOM to try again.</p>';
+  }
+  const empty=html || (photosOnly
     ? '<p class="small">No places with photos found for this search. Try another keyword or turn Photos only off.</p>'
     : '<p class="small">No places found. Try another search or category.</p>');
-  document.getElementById("homePlaces").innerHTML = empty;
-  document.getElementById("explorePlaces").innerHTML = empty;
+  const home=document.getElementById("homePlaces");
+  const explore=document.getElementById("explorePlaces");
+  if(home)home.innerHTML=empty;
+  if(explore)explore.innerHTML=empty;
 }
 
 function togglePhotosOnly(){
@@ -710,6 +719,40 @@ async function filterPlaces(category,button){
   await searchPlaces(homeQuery || exploreQuery);
 }
 
+async function fetchNomPlacesFallback(query,category){
+  const params=new URLSearchParams({
+    select:"*",
+    is_published:"eq.true",
+    order:"name.asc",
+    limit:"500"
+  });
+  if(category && category!=="All")params.set("category","eq."+category);
+  const response=await fetch(SUPABASE_URL+"/rest/v1/places?"+params.toString(),{
+    headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+SUPABASE_KEY,Accept:"application/json"}
+  });
+  if(!response.ok)throw new Error("NOM catalogue request failed ("+response.status+")");
+  const rows=await response.json();
+  const term=(query||"").trim().toLowerCase();
+  return (Array.isArray(rows)?rows:[]).filter(place=>!term||
+    [place.name,place.location,place.description].some(value=>String(value||"").toLowerCase().includes(term)));
+}
+
+async function loadNomPlaces(query,category){
+  if(supabaseClient){
+    try{
+      const {data,error}=await supabaseClient.rpc("search_places",{
+        search_text:query,
+        category_filter:category
+      });
+      if(!error && Array.isArray(data) && data.length)return data;
+      if(error)console.warn("NOM RPC search unavailable; using direct catalogue fallback:",error.message);
+    }catch(error){
+      console.warn("NOM RPC search failed; using direct catalogue fallback:",error.message);
+    }
+  }
+  return await fetchNomPlacesFallback(query,category);
+}
+
 let searchDebounce;
 async function searchPlaces(query){
   clearTimeout(searchDebounce);
@@ -718,11 +761,11 @@ async function searchPlaces(query){
 
   searchDebounce = setTimeout(async ()=>{
     // Render NOM's own catalogue first; third-party search must not block cards.
+    const categoryAtRequest=selectedCategory;
     const [localResult, communityResult] = await Promise.all([
-      supabaseClient
-        ? supabaseClient.rpc("search_places",{search_text:value,category_filter:selectedCategory})
-            .catch(error=>({data:[],error}))
-        : Promise.resolve({data:[],error:new Error("Supabase client unavailable")}),
+      loadNomPlaces(value,categoryAtRequest)
+        .then(data=>({data,error:null}))
+        .catch(error=>({data:[],error})),
       supabaseClient
         ? supabaseClient.from("community_posts").select("id,title,description,location,category,photo_urls,user_id,username,display_name").eq("status","published").limit(50)
             .then(result=>result).catch(error=>({data:[],error}))
@@ -730,10 +773,10 @@ async function searchPlaces(query){
     ]);
 
     if(requestId !== searchRequestId) return;
-    if(localResult.error) console.error("NOM database search:",localResult.error.message);
+    if(localResult.error) console.error("NOM catalogue search:",localResult.error.message);
     if(communityResult.error) console.warn("NOM community search:",communityResult.error.message);
 
-    const localPlaces = localResult.data || [];
+    const localPlaces = Array.isArray(localResult.data) ? localResult.data : [];
     const communityPlaces = (communityResult.data || [])
       .filter(post=>(selectedCategory === "All" || post.category === selectedCategory) &&
         (!value || [post.title,post.description,post.location].some(field=>String(field||"").toLowerCase().includes(value.toLowerCase()))))
