@@ -1226,7 +1226,7 @@ function updateProfile(){
     const publicUsername = metadata.username ? "@" + metadata.username : "NOM MEMBER";
     document.getElementById("loggedInName").textContent = publicUsername;
     accountStatus.textContent = publicUsername;
-    loadAccountAvatar(currentUser.id);
+    setTimeout(()=>loadAccountAvatar(currentUser.id),0);
     hideAuth();
   }else{
     profileInfo.classList.remove("hidden");
