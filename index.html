@@ -540,10 +540,10 @@ async function startNomChat(otherId){
 }
 async function openNomConversation(conversationId,otherId){
  activeNomConversation=conversationId;
- const [{data:p},{data:avatarProfile}]=await Promise.all([supabaseClient.from("work_profiles").select("username,headline,display_name").eq("user_id",otherId).maybeSingle(),supabaseClient.from("profiles").select("avatar_url").eq("id",otherId).maybeSingle()]);
+ const [{data:p},{data:avatarProfile}]=await Promise.all([supabaseClient.from("work_profiles").select("username,display_name").eq("user_id",otherId).maybeSingle(),supabaseClient.from("profiles").select("avatar_url").eq("id",otherId).maybeSingle()]);
  document.getElementById("nomChatAvatar").innerHTML=nomAvatarMarkup(avatarProfile?.avatar_url,p?.username||"NOM member");
  document.getElementById("nomChatTitle").textContent="@"+(p?.username||"NOM member");
- document.getElementById("nomChatSubtitle").textContent=p?.headline||p?.display_name||"Private NOM conversation";
+ document.getElementById("nomChatSubtitle").textContent="Private NOM conversation";
  document.getElementById("nomChatOverlay").classList.remove("hidden");document.body.style.overflow="hidden";
  await markNomConversationRead(conversationId);
  await loadNomMessages();
@@ -610,13 +610,13 @@ async function loadNomInbox(){
  const rows=await Promise.all(data.map(async convo=>{
   const peer=convo.member_one===currentUser.id?convo.member_two:convo.member_one;
   const [profile,avatarProfile,last,unread]=await Promise.all([
-   supabaseClient.from("work_profiles").select("username,headline").eq("user_id",peer).maybeSingle(),
+   supabaseClient.from("work_profiles").select("username").eq("user_id",peer).maybeSingle(),
    supabaseClient.from("profiles").select("avatar_url").eq("id",peer).maybeSingle(),
    supabaseClient.from("nom_messages").select("body,created_at").eq("conversation_id",convo.id).order("created_at",{ascending:false}).limit(1).maybeSingle(),
    supabaseClient.from("nom_messages").select("id").eq("conversation_id",convo.id).neq("sender_id",currentUser.id).is("read_at",null).limit(100)
   ]);
   const p=profile.data||{},count=unread.data?.length||0,avatarUrl=avatarProfile.data?.avatar_url;
-  const html='<div class="nom-inbox-item '+(count?'has-unread':'')+'"><strong><span class="nom-identity-row">'+nomAvatarMarkup(avatarUrl,p.username||"NOM member",true)+'<span>@'+escapeHTML(p.username||"NOM member")+'</span></span></strong><div class="small work-role">'+escapeHTML(p.headline||"Member")+'</div>'+(count?'<span class="nom-unread-label">'+count+' new</span>':'')+'<p class="small">'+escapeHTML(last.data?.body||"Conversation started")+'</p><button class="secondary" type="button" onclick="openNomConversation(\''+convo.id+'\',\''+peer+'\')">Open chat</button></div>';
+  const html='<div class="nom-inbox-item '+(count?'has-unread':'')+'"><strong><span class="nom-identity-row">'+nomAvatarMarkup(avatarUrl,p.username||"NOM member",true)+'<span>@'+escapeHTML(p.username||"NOM member")+'</span></span></strong>'+(count?'<span class="nom-unread-label">'+count+' new</span>':'')+'<p class="small">'+escapeHTML(last.data?.body||"Conversation started")+'</p><button class="secondary" type="button" onclick="openNomConversation(\''+convo.id+'\',\''+peer+'\')">Open chat</button></div>';
   return {created_at:last.data?.created_at||convo.created_at,html};
  }));
  rows.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
