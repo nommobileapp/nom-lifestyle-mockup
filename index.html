@@ -924,10 +924,13 @@ function getCommunityMediaInfo(file){
   const mime=(file.type||"").toLowerCase();
   const videoTypes={mp4:"video/mp4",mov:"video/quicktime",m4v:"video/x-m4v",webm:"video/webm"};
   const imageTypes={jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png",webp:"image/webp"};
-  const fallback=videoTypes[ext]||imageTypes[ext]||"";
-  const contentType=mime||fallback;
-  const isVideo=contentType.startsWith("video/")||!!videoTypes[ext];
-  const supported=isVideo?!!videoTypes[ext]||["video/mp4","video/webm","video/quicktime","video/x-m4v"].includes(mime):["image/jpeg","image/png","image/webp"].includes(contentType);
+  const validVideoMimes=["video/mp4","video/webm","video/quicktime","video/x-m4v"];
+  const validImageMimes=["image/jpeg","image/png","image/webp"];
+  // On iPhone Safari, file.type can be blank or generic (for example application/octet-stream).
+  // Trust a recognized filename extension first, then use a supported MIME type as fallback.
+  const contentType=videoTypes[ext]||imageTypes[ext]||(validVideoMimes.includes(mime)||validImageMimes.includes(mime)?mime:"");
+  const isVideo=!!videoTypes[ext]||validVideoMimes.includes(contentType);
+  const supported=!!contentType&&(isVideo?validVideoMimes.includes(contentType):validImageMimes.includes(contentType));
   return {isVideo,contentType,supported};
 }
 
@@ -936,7 +939,10 @@ async function submitCommunityPlace(){
   const title=document.getElementById("communityTitle").value.trim(),location=document.getElementById("communityLocation").value.trim(),category=document.getElementById("communityCategory").value,description=document.getElementById("communityDescription").value.trim(),files=Array.from(document.getElementById("communityMedia").files||[]),message=document.getElementById("communityMessage"),button=document.getElementById("communitySubmit");
   if(title.length<3||location.length<2||description.length<10){message.textContent="Please add a place name, location and a description of at least 10 characters.";return;}
   if(files.length<1||files.length>4){message.textContent="Please choose between 1 and 4 photos/videos.";return;}
-  const mediaInfo=files.map(getCommunityMediaInfo);if(files.some((file,i)=>!mediaInfo[i].supported||file.size===0||file.size>50*1024*1024)){message.textContent="One file is unsupported or larger than 50 MB. Use JPG, PNG, WebP, MP4, MOV or WebM.";return;}
+  const mediaInfo=files.map(getCommunityMediaInfo);
+  const tooLarge=files.find(file=>file.size>50*1024*1024);
+  if(tooLarge){message.textContent=tooLarge.name+" is "+(tooLarge.size/1024/1024).toFixed(1)+" MB. NOM's limit is 50 MB per file.";return;}
+  if(files.some((file,i)=>file.size===0||!mediaInfo[i].supported)){message.textContent="NOM couldn't identify one of the selected files. Please choose a MOV, MP4, WebM, JPG, PNG or WebP file.";return;}
   const {data:{session}}=await supabaseClient.auth.getSession();if(!session){message.textContent="Please log in again.";return;}
   const progress=document.getElementById("communityUploadProgress"),progressBar=document.getElementById("communityUploadProgressBar");button.disabled=true;button.textContent="Uploading media...";progress.classList.remove("hidden");progressBar.style.width="0%";message.textContent="Preparing your media...";const uploaded=[],photoUrls=[],videoUrls=[];
   try{
