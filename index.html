@@ -303,7 +303,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     <label for="communityLocation">Location</label><input id="communityLocation" maxlength="160" placeholder="Town, island or country">
     <label for="communityCategory">Category</label><select id="communityCategory"><option>Nature</option><option>Food</option><option>Beach</option><option>Culture</option><option>Stay</option><option>Experience</option></select>
     <label for="communityDescription">Your story / description</label><textarea id="communityDescription" rows="4" maxlength="1200" placeholder="What makes this place worth discovering?"></textarea>
-    <label for="communityMedia">Photos and videos</label><input id="communityMedia" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime,video/x-m4v" multiple>
+    <label for="communityMedia">Photos and videos</label><input id="communityMedia" type="file" accept="image/*,video/*" multiple>
     <button class="primary" id="communitySubmit" type="button" onclick="submitCommunityPlace()">Submit place</button>
     <button class="secondary" type="button" onclick="hideCommunityComposer()">Cancel</button>
     <div class="message" id="communityMessage"></div><div class="work-progress hidden" id="communityUploadProgress"><span id="communityUploadProgressBar"></span></div><p class="small">Your place and photos appear publicly in Explore and Community as soon as you share them.</p>
