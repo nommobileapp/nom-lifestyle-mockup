@@ -1226,6 +1226,7 @@ function updateProfile(){
     const publicUsername = metadata.username ? "@" + metadata.username : "NOM MEMBER";
     document.getElementById("loggedInName").textContent = publicUsername;
     accountStatus.textContent = publicUsername;
+    loadAccountAvatar(currentUser.id);
     hideAuth();
   }else{
     profileInfo.classList.remove("hidden");
@@ -1268,7 +1269,10 @@ async function initialiseApp(){
       currentUser = session ? session.user : null;
       const nextUserId=currentUser?.id||null;
       updateProfile();
-      if(currentUser){startNomNotificationListener();uploadPendingRegistrationAvatar(currentUser).catch(error=>console.warn("NOM avatar upload:",error.message));}else{if(nomNotificationChannel){supabaseClient.removeChannel(nomNotificationChannel);nomNotificationChannel=null;}renderNomUnreadBadges(0);}
+      if(currentUser){
+        startNomNotificationListener();
+        setTimeout(()=>uploadPendingRegistrationAvatar(currentUser).catch(error=>console.warn("NOM avatar upload:",error.message)),0);
+      }else{if(nomNotificationChannel){supabaseClient.removeChannel(nomNotificationChannel);nomNotificationChannel=null;}renderNomUnreadBadges(0);}
       if(previousUserId!==nextUserId){
         const ownMedia=document.getElementById("workPortfolioMedia");
         const publicPanel=document.getElementById("workPublicPortfolio");
