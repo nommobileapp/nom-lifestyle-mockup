@@ -919,23 +919,35 @@ async function loadCommunityFeed(){
   const {data:own,error:ownError}=await supabaseClient.from("community_posts").select("id,title,description,location,category,photo_urls,video_urls,username,display_name,status,created_at").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(20);
   mine.innerHTML=ownError?'<p class="small">Could not load your submissions.</p>':own?.length?own.map(p=>communityPostCard(p,true)).join(""):'<p class="small">You have not shared a place yet.</p>';
 }
+function getCommunityMediaInfo(file){
+  const ext=(file.name.split(".").pop()||"").toLowerCase();
+  const mime=(file.type||"").toLowerCase();
+  const videoTypes={mp4:"video/mp4",mov:"video/quicktime",m4v:"video/x-m4v",webm:"video/webm"};
+  const imageTypes={jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png",webp:"image/webp"};
+  const fallback=videoTypes[ext]||imageTypes[ext]||"";
+  const contentType=mime||fallback;
+  const isVideo=contentType.startsWith("video/")||!!videoTypes[ext];
+  const supported=isVideo?!!videoTypes[ext]||["video/mp4","video/webm","video/quicktime","video/x-m4v"].includes(mime):["image/jpeg","image/png","image/webp"].includes(contentType);
+  return {isVideo,contentType,supported};
+}
+
 async function submitCommunityPlace(){
   if(!currentUser){showCommunityComposer();return;}
   const title=document.getElementById("communityTitle").value.trim(),location=document.getElementById("communityLocation").value.trim(),category=document.getElementById("communityCategory").value,description=document.getElementById("communityDescription").value.trim(),files=Array.from(document.getElementById("communityMedia").files||[]),message=document.getElementById("communityMessage"),button=document.getElementById("communitySubmit");
   if(title.length<3||location.length<2||description.length<10){message.textContent="Please add a place name, location and a description of at least 10 characters.";return;}
   if(files.length<1||files.length>4){message.textContent="Please choose between 1 and 4 photos/videos.";return;}
-  const allowed=new Set(["image/jpeg","image/png","image/webp","video/mp4","video/webm","video/quicktime","video/x-m4v"]);if(files.some(file=>!allowed.has(file.type)||file.size===0||file.size>50*1024*1024)){message.textContent="Use JPG, PNG, WebP, MP4, MOV or WebM files. Each file must be 50 MB or smaller.";return;}
+  const mediaInfo=files.map(getCommunityMediaInfo);if(files.some((file,i)=>!mediaInfo[i].supported||file.size===0||file.size>50*1024*1024)){message.textContent="One file is unsupported or larger than 50 MB. Use JPG, PNG, WebP, MP4, MOV or WebM.";return;}
   const {data:{session}}=await supabaseClient.auth.getSession();if(!session){message.textContent="Please log in again.";return;}
   button.disabled=true;button.textContent="Uploading media...";message.textContent="Preparing your media...";const uploaded=[],photoUrls=[],videoUrls=[];
   try{
     const {data:profile}=await supabaseClient.from("profiles").select("username,display_name").eq("id",currentUser.id).maybeSingle(),meta=currentUser.user_metadata||{};
     const username=profile?.username||meta.username||"nom-member",displayName=profile?.display_name||meta.display_name||username;
     for(let i=0;i<files.length;i++){
-      const file=files[i],isVideo=file.type.startsWith("video/"),ext=(file.name.split(".").pop()||"file").toLowerCase().replace(/[^a-z0-9]/g,"")||"bin",path=currentUser.id+"/"+crypto.randomUUID()+"."+ext;
+      const file=files[i],{isVideo,contentType}=mediaInfo[i],ext=(file.name.split(".").pop()||"file").toLowerCase().replace(/[^a-z0-9]/g,"")||"bin",path=currentUser.id+"/"+crypto.randomUUID()+"."+ext;
       message.textContent="Uploading media "+(i+1)+" of "+files.length+"...";
       let objectPath;
       if(file.size>6*1024*1024){await uploadNomResumable(file,path,session,"community-photos",pct=>{message.textContent="Uploading media "+(i+1)+" of "+files.length+" · "+pct+"%";});objectPath=path;}
-      else{const {data:up,error:upError}=await supabaseClient.storage.from("community-photos").upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type});if(upError)throw upError;objectPath=up.path;}
+      else{const {data:up,error:upError}=await supabaseClient.storage.from("community-photos").upload(path,file,{cacheControl:"3600",upsert:false,contentType});if(upError)throw upError;objectPath=up.path;}
       uploaded.push(objectPath);const url=supabaseClient.storage.from("community-photos").getPublicUrl(objectPath).data.publicUrl;(isVideo?videoUrls:photoUrls).push(url);
     }
     message.textContent="Media uploaded. Publishing your place...";
