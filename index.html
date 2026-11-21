@@ -911,14 +911,15 @@ function nomSearchTabsMarkup(){
  return [["all","All"],["places","Places"],["members","Members"],["community","Community"],["work","Work"]].map(([key,label])=>'<button type="button" class="nom-search-tab '+(nomSearchCategory===key?"active":"")+'" onclick="setNomSearchCategory(\''+key+'\')">'+label+' · '+counts[key]+'</button>').join("");
 }
 function nomSearchResultRow(kind,title,subtitle,image,action){
- return '<div class="nom-search-result" '+(action?'onclick="'+action+'" role="button" tabindex="0"':'')+'>'+(image?'<img class="nom-search-thumb" src="'+escapeHTML(image)+'" alt="" loading="lazy">':'<span class="nom-search-thumb" aria-hidden="true"></span>')+'<div class="nom-search-result-copy"><div class="nom-search-kind">'+escapeHTML(kind)+'</div><strong>'+escapeHTML(title||"NOM result")+'</strong><small>'+escapeHTML(subtitle||"")+'</small></div></div>';
+ const safeImage=typeof image==="string"&&/^https:\\/\\//i.test(image)?image:"";
+ return '<div class="nom-search-result" '+(action?'onclick="'+action+'" role="button" tabindex="0"':'')+'>'+(safeImage?'<img class="nom-search-thumb" src="'+escapeHTML(safeImage)+'" alt="" loading="lazy">':'<span class="nom-search-thumb" aria-hidden="true"></span>')+'<div class="nom-search-result-copy"><div class="nom-search-kind">'+escapeHTML(kind)+'</div><strong>'+escapeHTML(title||"NOM result")+'</strong><small>'+escapeHTML(subtitle||"")+'</small></div></div>';
 }
 function renderNOMSearchResults(){
  const source=nomSearchSource,tab=document.getElementById(source+"SearchTabs"),target=document.getElementById(source+"SearchResults");
  if(!tab||!target)return;
  tab.innerHTML=nomSearchTabsMarkup();
  const groups=[
-  {key:"places",label:"Places",items:nomSearchData.places,render:p=>{const id=String(p.id??p.source_id??"");nomDetailItems[id]={id:p.id,kind:"place",name:p.name,description:p.description,location:p.location,category:p.category,price:p.price,rating:p.rating,photos:[p.image_url||p.image].filter(Boolean),videos:p.video_urls||[],attribution:p.image_attribution,license:p.image_license};return nomSearchResultRow("Place",p.name,(p.location||"")+(p.category?" · "+p.category:""),p.image_url||p.image,'openPlaceDetail(\''+escapeHTML(id)+'\')');}},
+  {key:"places",label:"Places",items:nomSearchData.places,render:p=>{const id=String(p.id??p.source_id??"").replace(/[^a-zA-Z0-9_-]/g,"");nomDetailItems[id]={id:p.id,kind:"place",name:p.name,description:p.description,location:p.location,category:p.category,price:p.price,rating:p.rating,photos:[p.image_url||p.image].filter(Boolean),videos:p.video_urls||[],attribution:p.image_attribution,license:p.image_license};return nomSearchResultRow("Place",p.name,(p.location||"")+(p.category?" · "+p.category:""),p.image_url||p.image,'openPlaceDetail(\''+escapeHTML(id)+'\')');}},
   {key:"members",label:"Members",items:nomSearchData.members,render:p=>nomSearchResultRow("NOM member",p.display_name||p.username||"NOM member","@"+(p.username||"member")+(p.headline?" · "+p.headline:"")+(p.location?" · "+p.location:""),p.avatar_url,p.has_work_profile?'openMemberPortfolio(\''+escapeHTML(p.id)+'\')':'showPage(\'work\')')},
   {key:"community",label:"Community",items:nomSearchData.community,render:p=>nomSearchResultRow("Community",p.title,(p.location||"")+(p.category?" · "+p.category:""),(p.photo_urls||[])[0]||"",'showPage(\'community\')')},
   {key:"work",label:"Work",items:nomSearchData.work,render:p=>nomSearchResultRow((p.listing_type||"opportunity").replace(/_/g," "),p.title,(p.location||"Remote")+(p.work_mode?" · "+p.work_mode:"")+(p.compensation?" · "+p.compensation:""),"",'showPage(\'work\')')}
@@ -941,6 +942,7 @@ async function searchNOM(query,source){
  const value=nomSearchSafeTerm(query);clearTimeout(nomSearchTimer);const requestId=++nomSearchRequestId;
  if(!value){setNOMSearchView(nomSearchSource,false);nomSearchData={places:[],members:[],community:[],work:[]};searchPlaces("");return;}
  setNOMSearchView(nomSearchSource,true);
+ nomSearchData={places:[],members:[],community:[],work:[]};
  const resultTarget=document.getElementById(nomSearchSource+"SearchResults"),tabsTarget=document.getElementById(nomSearchSource+"SearchTabs");
  if(tabsTarget)tabsTarget.innerHTML=nomSearchTabsMarkup();
  if(resultTarget)resultTarget.innerHTML=value.length<2?'<div class="nom-search-hint">Type at least 2 characters to search NOM.</div>':'<div class="nom-search-loading">Searching NOM...</div>';
