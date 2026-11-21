@@ -245,6 +245,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 .nom-search-group h3 span{font-size:11px;color:var(--muted);font-weight:400}
 .nom-search-result{display:flex;gap:11px;align-items:center;padding:11px 0;border-top:1px solid #303030;min-width:0}
 .nom-search-thumb{width:58px;height:58px;flex:0 0 58px;border-radius:11px;object-fit:cover;background:#282828}
+.nom-search-placeholder{align-items:center;justify-content:center;background:linear-gradient(145deg,#30302d,#1e2020);font-size:25px;border:1px solid #393939}
 .nom-search-result-copy{min-width:0;flex:1}
 .nom-search-result-copy strong{display:block;color:var(--white);font-size:13px;overflow-wrap:anywhere}
 .nom-search-result-copy small{display:block;color:var(--muted);font-size:11px;line-height:1.45;margin-top:3px;overflow-wrap:anywhere}
@@ -913,7 +914,9 @@ function nomSearchTabsMarkup(){
 }
 function nomSearchResultRow(kind,title,subtitle,image,action){
  const safeImage=typeof image==="string"&&image.startsWith("https://")?image:"";
- return '<div class="nom-search-result" '+(action?'onclick="'+action+'" role="button" tabindex="0"':'')+'>'+(safeImage?'<img class="nom-search-thumb" src="'+escapeHTML(safeImage)+'" alt="" loading="lazy">':'<span class="nom-search-thumb" aria-hidden="true"></span>')+'<div class="nom-search-result-copy"><div class="nom-search-kind">'+escapeHTML(kind)+'</div><strong>'+escapeHTML(title||"NOM result")+'</strong><small>'+escapeHTML(subtitle||"")+'</small></div></div>';
+ const fallback=kind.toLowerCase().includes("place")?"🍽️":"👤";
+ const thumb=safeImage?'<img class="nom-search-thumb" src="'+escapeHTML(safeImage)+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><span class="nom-search-thumb nom-search-placeholder" aria-hidden="true" style="display:none">'+fallback+'</span>':'<span class="nom-search-thumb nom-search-placeholder" aria-hidden="true">'+fallback+'</span>';
+ return '<div class="nom-search-result" '+(action?'onclick="'+action+'" role="button" tabindex="0"':'')+'>'+thumb+'<div class="nom-search-result-copy"><div class="nom-search-kind">'+escapeHTML(kind)+'</div><strong>'+escapeHTML(title||"NOM result")+'</strong><small>'+escapeHTML(subtitle||"")+'</small></div></div>';
 }
 function renderNOMSearchResults(){
  const source=nomSearchSource,tab=document.getElementById(source+"SearchTabs"),target=document.getElementById(source+"SearchResults");
