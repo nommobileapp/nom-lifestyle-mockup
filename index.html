@@ -911,7 +911,7 @@ function nomSearchTabsMarkup(){
  return [["all","All"],["places","Places"],["members","Members"],["community","Community"],["work","Work"]].map(([key,label])=>'<button type="button" class="nom-search-tab '+(nomSearchCategory===key?"active":"")+'" onclick="setNomSearchCategory(\''+key+'\')">'+label+' · '+counts[key]+'</button>').join("");
 }
 function nomSearchResultRow(kind,title,subtitle,image,action){
- const safeImage=typeof image==="string"&&/^https:\\/\\//i.test(image)?image:"";
+ const safeImage=typeof image==="string"&&image.startsWith("https://")?image:"";
  return '<div class="nom-search-result" '+(action?'onclick="'+action+'" role="button" tabindex="0"':'')+'>'+(safeImage?'<img class="nom-search-thumb" src="'+escapeHTML(safeImage)+'" alt="" loading="lazy">':'<span class="nom-search-thumb" aria-hidden="true"></span>')+'<div class="nom-search-result-copy"><div class="nom-search-kind">'+escapeHTML(kind)+'</div><strong>'+escapeHTML(title||"NOM result")+'</strong><small>'+escapeHTML(subtitle||"")+'</small></div></div>';
 }
 function renderNOMSearchResults(){
