@@ -904,6 +904,7 @@ async function searchPlaces(query){
 /* NOM UNIVERSAL SEARCH — Places, Members, Community and Work */
 let nomSearchTimer=null,nomSearchRequestId=0,nomSearchCategory="all",nomSearchSource="home";
 let nomSearchData={places:[],members:[],community:[],work:[]};
+let nomSearchExternalMessage="";
 function setNomSearchCategory(category){nomSearchCategory=category;renderNOMSearchResults();}
 function nomSearchSafeTerm(value){return String(value||"").trim().replace(/[%,()\\\\'"]/g," ").replace(/\\s+/g," ").slice(0,80);}
 function nomSearchTabsMarkup(){
@@ -919,7 +920,7 @@ function renderNOMSearchResults(){
  if(!tab||!target)return;
  tab.innerHTML=nomSearchTabsMarkup();
  const groups=[
-  {key:"places",label:"Places",items:nomSearchData.places,render:p=>{const id=String(p.id??p.source_id??"").replace(/[^a-zA-Z0-9_-]/g,"");nomDetailItems[id]={id:p.id,kind:"place",name:p.name,description:p.description,location:p.location,category:p.category,price:p.price,rating:p.rating,photos:[p.image_url||p.image].filter(Boolean),videos:p.video_urls||[],attribution:p.image_attribution,license:p.image_license};return nomSearchResultRow("Place",p.name,(p.location||"")+(p.category?" · "+p.category:""),p.image_url||p.image,'openPlaceDetail(\''+escapeHTML(id)+'\')');}},
+  {key:"places",label:"Places",items:nomSearchData.places,render:p=>{const id=String(p.id??p.source_id??"").replace(/[^a-zA-Z0-9_-]/g,"");nomDetailItems[id]={id:p.id,kind:"place",name:p.name,description:p.description,location:p.location,category:p.category,price:p.price,rating:p.rating,photos:[p.image_url||p.image].filter(Boolean),videos:p.video_urls||[],attribution:p.image_attribution,license:p.image_license};return nomSearchResultRow(p.source?"External place · OSM":"NOM place",p.name,(p.location||"")+(p.category?" · "+p.category:""),p.image_url||p.image,'openPlaceDetail(\''+escapeHTML(id)+'\')');}},
   {key:"members",label:"Members",items:nomSearchData.members,render:p=>nomSearchResultRow("NOM member",p.display_name||p.username||"NOM member","@"+(p.username||"member")+(p.headline?" · "+p.headline:"")+(p.location?" · "+p.location:""),p.avatar_url,p.has_work_profile?'openMemberPortfolio(\''+escapeHTML(p.id)+'\')':'showPage(\'work\')')},
   {key:"community",label:"Community",items:nomSearchData.community,render:p=>nomSearchResultRow("Community",p.title,(p.location||"")+(p.category?" · "+p.category:""),(p.photo_urls||[])[0]||"",'showPage(\'community\')')},
   {key:"work",label:"Work",items:nomSearchData.work,render:p=>nomSearchResultRow((p.listing_type||"opportunity").replace(/_/g," "),p.title,(p.location||"Remote")+(p.work_mode?" · "+p.work_mode:"")+(p.compensation?" · "+p.compensation:""),"",'showPage(\'work\')')}
@@ -952,11 +953,12 @@ async function searchNOM(query,source){
   const pattern="%"+value+"%";
   const communityPromise=supabaseClient.from("community_posts").select("id,title,description,location,category,photo_urls,video_urls,user_id,username,display_name").eq("status","published").or("title.ilike."+pattern+",description.ilike."+pattern+",location.ilike."+pattern).order("created_at",{ascending:false}).limit(12);
   const placesPromise=loadNomPlaces(value,"All").catch(()=>[]);
-  const externalPromise=fetch(SUPABASE_URL+"/functions/v1/nom-place-search?q="+encodeURIComponent(value)+"&category=All&limit=12",{headers:{apikey:SUPABASE_KEY}}).then(r=>r.ok?r.json():{places:[]}).catch(()=>({places:[]}));
+  const externalPromise=fetch(SUPABASE_URL+"/functions/v1/nom-place-search-v2?q="+encodeURIComponent(value)+"&limit=12",{headers:{apikey:SUPABASE_KEY}}).then(async r=>{const data=await r.json().catch(()=>({}));return r.ok&&!data.error?{ok:true,data}:{ok:false,error:data.error||"External places search is temporarily unavailable."};}).catch(()=>({ok:false,error:"Could not connect to external places search."}));
   const [places,external,community]=await Promise.all([placesPromise,externalPromise,communityPromise]);
+  nomSearchExternalMessage=external.ok?"External places checked · Geoapify / OpenStreetMap":(external.error||"External places search is unavailable right now.");
   if(requestId!==nomSearchRequestId)return;
   const mergedPlaces=new Map();
-  [...(Array.isArray(external?.places)?external.places:[]),...(Array.isArray(places)?places:[])].forEach(p=>mergedPlaces.set(String(p.source_id||p.id),{...p,id:p.id??p.source_id}));
+  [...(Array.isArray(external?.data?.places)?external.data.places:[]),...(Array.isArray(places)?places:[])].forEach(p=>mergedPlaces.set(String(p.source_id||p.id),{...p,id:p.id??p.source_id}));
   let members=[],work=[];
   if(currentUser){
    const [profilesResult,workProfilesResult,workResult]=await Promise.all([
@@ -978,6 +980,7 @@ async function searchNOM(query,source){
   renderNOMSearchResults();
   const empty=Object.values(nomSearchData).every(list=>!list.length);
   if(empty&&resultTarget)resultTarget.innerHTML='<div class="nom-search-empty">No matches found. Try a different keyword.</div>';
+  if(resultTarget&&nomSearchExternalMessage)resultTarget.innerHTML+='<div class="nom-search-hint">'+escapeHTML(nomSearchExternalMessage)+'</div>';
   if(!currentUser&&resultTarget)resultTarget.innerHTML+='<div class="nom-search-hint">Log in to search NOM members and work opportunities. Places and community discoveries are available without signing in.</div>';
  },260);
 }
