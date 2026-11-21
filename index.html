@@ -900,6 +900,86 @@ async function searchPlaces(query){
   },350);
 }
 
+
+/* NOM UNIVERSAL SEARCH — Places, Members, Community and Work */
+let nomSearchTimer=null,nomSearchRequestId=0,nomSearchCategory="all",nomSearchSource="home";
+let nomSearchData={places:[],members:[],community:[],work:[]};
+function setNomSearchCategory(category){nomSearchCategory=category;renderNOMSearchResults();}
+function nomSearchSafeTerm(value){return String(value||"").trim().replace(/[%,()\\\\'"]/g," ").replace(/\\s+/g," ").slice(0,80);}
+function nomSearchTabsMarkup(){
+ const counts={all:nomSearchData.places.length+nomSearchData.members.length+nomSearchData.community.length+nomSearchData.work.length,places:nomSearchData.places.length,members:nomSearchData.members.length,community:nomSearchData.community.length,work:nomSearchData.work.length};
+ return [["all","All"],["places","Places"],["members","Members"],["community","Community"],["work","Work"]].map(([key,label])=>'<button type="button" class="nom-search-tab '+(nomSearchCategory===key?"active":"")+'" onclick="setNomSearchCategory(\''+key+'\')">'+label+' · '+counts[key]+'</button>').join("");
+}
+function nomSearchResultRow(kind,title,subtitle,image,action){
+ return '<div class="nom-search-result" '+(action?'onclick="'+action+'" role="button" tabindex="0"':'')+'>'+(image?'<img class="nom-search-thumb" src="'+escapeHTML(image)+'" alt="" loading="lazy">':'<span class="nom-search-thumb" aria-hidden="true"></span>')+'<div class="nom-search-result-copy"><div class="nom-search-kind">'+escapeHTML(kind)+'</div><strong>'+escapeHTML(title||"NOM result")+'</strong><small>'+escapeHTML(subtitle||"")+'</small></div></div>';
+}
+function renderNOMSearchResults(){
+ const source=nomSearchSource,tab=document.getElementById(source+"SearchTabs"),target=document.getElementById(source+"SearchResults");
+ if(!tab||!target)return;
+ tab.innerHTML=nomSearchTabsMarkup();
+ const groups=[
+  {key:"places",label:"Places",items:nomSearchData.places,render:p=>{const id=String(p.id??p.source_id??"");nomDetailItems[id]={id:p.id,kind:"place",name:p.name,description:p.description,location:p.location,category:p.category,price:p.price,rating:p.rating,photos:[p.image_url||p.image].filter(Boolean),videos:p.video_urls||[],attribution:p.image_attribution,license:p.image_license};return nomSearchResultRow("Place",p.name,(p.location||"")+(p.category?" · "+p.category:""),p.image_url||p.image,'openPlaceDetail(\''+escapeHTML(id)+'\')');}},
+  {key:"members",label:"Members",items:nomSearchData.members,render:p=>nomSearchResultRow("NOM member",p.display_name||p.username||"NOM member","@"+(p.username||"member")+(p.headline?" · "+p.headline:"")+(p.location?" · "+p.location:""),p.avatar_url,p.has_work_profile?'openMemberPortfolio(\''+escapeHTML(p.id)+'\')':'showPage(\'work\')')},
+  {key:"community",label:"Community",items:nomSearchData.community,render:p=>nomSearchResultRow("Community",p.title,(p.location||"")+(p.category?" · "+p.category:""),(p.photo_urls||[])[0]||"",'showPage(\'community\')')},
+  {key:"work",label:"Work",items:nomSearchData.work,render:p=>nomSearchResultRow((p.listing_type||"opportunity").replace(/_/g," "),p.title,(p.location||"Remote")+(p.work_mode?" · "+p.work_mode:"")+(p.compensation?" · "+p.compensation:""),"",'showPage(\'work\')')}
+ ];
+ const selected=nomSearchCategory==="all"?groups:groups.filter(g=>g.key===nomSearchCategory);
+ target.innerHTML=selected.map(g=>'<section class="nom-search-group"><h3>'+g.label+' <span>'+g.items.length+' found</span></h3>'+(g.items.length?g.items.slice(0,6).map(g.render).join(""):'<div class="nom-search-empty">No matching '+g.label.toLowerCase()+' yet.</div>')+'</section>').join("")||'<div class="nom-search-empty">No results found. Try another search.</div>';
+}
+function setNOMSearchView(source,active){
+ ["home","explore"].forEach(page=>{
+  const section=document.getElementById(page+"Page"),panel=document.getElementById(page+"UniversalSearch");
+  if(!section||!panel)return;
+  panel.classList.toggle("hidden",!(active&&page===source));
+  section.querySelectorAll(".categories").forEach(el=>el.style.display=active&&page===source?"none":"");
+  const cards=document.getElementById(page+"Places");if(cards)cards.style.display=active&&page===source?"none":"";
+  if(page==="explore")["importBaliButton","photosOnlyButton","placesMessage"].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=active&&page===source?"none":"";});
+ });
+}
+async function searchNOM(query,source){
+ nomSearchSource=source==="explore"?"explore":"home";
+ const value=nomSearchSafeTerm(query);clearTimeout(nomSearchTimer);const requestId=++nomSearchRequestId;
+ if(!value){setNOMSearchView(nomSearchSource,false);nomSearchData={places:[],members:[],community:[],work:[]};searchPlaces("");return;}
+ setNOMSearchView(nomSearchSource,true);
+ const resultTarget=document.getElementById(nomSearchSource+"SearchResults"),tabsTarget=document.getElementById(nomSearchSource+"SearchTabs");
+ if(tabsTarget)tabsTarget.innerHTML=nomSearchTabsMarkup();
+ if(resultTarget)resultTarget.innerHTML=value.length<2?'<div class="nom-search-hint">Type at least 2 characters to search NOM.</div>':'<div class="nom-search-loading">Searching NOM...</div>';
+ if(value.length<2)return;
+ nomSearchTimer=setTimeout(async()=>{
+  if(!supabaseClient){if(resultTarget)resultTarget.innerHTML='<div class="nom-search-empty">NOM search is temporarily unavailable.</div>';return;}
+  const pattern="%"+value+"%";
+  const communityPromise=supabaseClient.from("community_posts").select("id,title,description,location,category,photo_urls,video_urls,user_id,username,display_name").eq("status","published").or("title.ilike."+pattern+",description.ilike."+pattern+",location.ilike."+pattern).order("created_at",{ascending:false}).limit(12);
+  const placesPromise=loadNomPlaces(value,"All").catch(()=>[]);
+  const externalPromise=fetch(SUPABASE_URL+"/functions/v1/nom-place-search?q="+encodeURIComponent(value)+"&category=All&limit=12",{headers:{apikey:SUPABASE_KEY}}).then(r=>r.ok?r.json():{places:[]}).catch(()=>({places:[]}));
+  const [places,external,community]=await Promise.all([placesPromise,externalPromise,communityPromise]);
+  if(requestId!==nomSearchRequestId)return;
+  const mergedPlaces=new Map();
+  [...(Array.isArray(external?.places)?external.places:[]),...(Array.isArray(places)?places:[])].forEach(p=>mergedPlaces.set(String(p.source_id||p.id),{...p,id:p.id??p.source_id}));
+  let members=[],work=[];
+  if(currentUser){
+   const [profilesResult,workProfilesResult,workResult]=await Promise.all([
+    supabaseClient.from("profiles").select("id,username,display_name,avatar_url").or("username.ilike."+pattern+",display_name.ilike."+pattern).limit(15),
+    supabaseClient.from("work_profiles").select("user_id,headline,bio,location,display_name,username").or("headline.ilike."+pattern+",bio.ilike."+pattern+",location.ilike."+pattern+",display_name.ilike."+pattern+",username.ilike."+pattern).limit(15),
+    supabaseClient.from("work_listings").select("id,listing_type,title,description,location,work_mode,category,compensation,member_name,member_username").eq("status","published").or("title.ilike."+pattern+",description.ilike."+pattern+",location.ilike."+pattern+",category.ilike."+pattern).order("created_at",{ascending:false}).limit(15)
+   ]);
+   if(requestId!==nomSearchRequestId)return;
+   const profileRows=profilesResult.data||[],workRows=workProfilesResult.data||[],profileMap=new Map(profileRows.map(p=>[p.id,p]));
+   const missingIds=workRows.map(p=>p.user_id).filter(id=>!profileMap.has(id));
+   let extraProfiles=[];
+   if(missingIds.length){const extra=await supabaseClient.from("profiles").select("id,username,display_name,avatar_url").in("id",missingIds);extraProfiles=extra.data||[];}
+   const allProfiles=[...profileRows,...extraProfiles],allMap=new Map(allProfiles.map(p=>[p.id,p])),workMap=new Map(workRows.map(p=>[p.user_id,p]));
+   const memberIds=new Set([...allProfiles.map(p=>p.id),...workRows.map(p=>p.user_id)]);
+   members=[...memberIds].map(id=>{const p=allMap.get(id)||{},w=workMap.get(id)||{};return{id,username:p.username||w.username||"",display_name:p.display_name||w.display_name||"",avatar_url:p.avatar_url||"",headline:w.headline||"",location:w.location||"",has_work_profile:workMap.has(id)};});
+   work=workResult.data||[];
+  }
+  nomSearchData={places:[...mergedPlaces.values()],members,community:community.data||[],work};
+  renderNOMSearchResults();
+  const empty=Object.values(nomSearchData).every(list=>!list.length);
+  if(empty&&resultTarget)resultTarget.innerHTML='<div class="nom-search-empty">No matches found. Try a different keyword.</div>';
+  if(!currentUser&&resultTarget)resultTarget.innerHTML+='<div class="nom-search-hint">Log in to search NOM members and work opportunities. Places and community discoveries are available without signing in.</div>';
+ },260);
+}
+
 async function importBaliPlaces(){
   const message = document.getElementById("placesMessage");
   const button = document.getElementById("importBaliButton");
