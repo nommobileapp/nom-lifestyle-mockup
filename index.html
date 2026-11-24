@@ -1990,6 +1990,51 @@ async function logout(){
 /* RESTORE LOGIN SESSION
    Keep the auth callback synchronous. Defer database and realtime work
    until after Supabase has finished processing the session event. */
+let nomAuthEventRevision=0;
+let nomSessionRestoreRunning=false;
+
+function applyNomRestoredSession(session,source){
+  const restoredUser=session?.user||null;
+  if(!restoredUser||currentUser?.id===restoredUser.id)return;
+  const previousUserId=currentUser?.id||null;
+  currentUser=restoredUser;
+  updateProfile();
+  setTimeout(()=>{
+    if(currentUser?.id!==restoredUser.id)return;
+    loadSavedPlacesForUser(restoredUser.id);
+    startNomNotificationListener();
+    if(previousUserId!==restoredUser.id){
+      const ownMedia=document.getElementById("workPortfolioMedia");
+      const publicPanel=document.getElementById("workPublicPortfolio");
+      const publicContent=document.getElementById("workPublicPortfolioContent");
+      if(ownMedia)ownMedia.innerHTML="";
+      if(publicPanel)publicPanel.classList.add("hidden");
+      if(publicContent)publicContent.innerHTML="";
+      const workPage=document.getElementById("workPage");
+      if(workPage&&!workPage.classList.contains("hidden"))openWork();
+    }
+    console.info("NOM: saved session restored ("+source+").");
+  },0);
+}
+
+async function restoreNomSession(source){
+  if(!supabaseClient||nomSessionRestoreRunning||currentUser)return;
+  nomSessionRestoreRunning=true;
+  const revision=nomAuthEventRevision;
+  try{
+    const {data,error}=await supabaseClient.auth.getSession();
+    if(error)throw error;
+    /* Do not let a delayed storage read override a newer sign-in/sign-out event. */
+    if(revision===nomAuthEventRevision&&!currentUser&&data?.session){
+      applyNomRestoredSession(data.session,source);
+    }
+  }catch(error){
+    console.warn("NOM: session restore check failed:",error.message||error);
+  }finally{
+    nomSessionRestoreRunning=false;
+  }
+}
+
 function initialiseApp(){
   if(!supabaseClient){
     console.error("NOM: Supabase SDK did not load; public navigation remains available.");
@@ -1998,6 +2043,7 @@ function initialiseApp(){
 
   supabaseClient.auth.onAuthStateChange((event,session)=>{
     if(!["INITIAL_SESSION","SIGNED_IN","SIGNED_OUT","TOKEN_REFRESHED","USER_UPDATED","PASSWORD_RECOVERY"].includes(event))return;
+    nomAuthEventRevision++;
 
     const previousUserId=currentUser?.id||null;
     const eventUser=session?.user||null;
@@ -2043,6 +2089,15 @@ function initialiseApp(){
         }
       }
     },0);
+  });
+
+  /* Safari can finish restoring WebKit storage after the page's first paint.
+     Confirm the persisted session outside the auth callback, then retry when
+     Safari returns the page to the foreground. */
+  restoreNomSession("startup");
+  window.addEventListener("pageshow",()=>restoreNomSession("pageshow"));
+  document.addEventListener("visibilitychange",()=>{
+    if(document.visibilityState==="visible")restoreNomSession("visible");
   });
 }
 
