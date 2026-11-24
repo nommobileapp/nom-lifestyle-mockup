@@ -2048,6 +2048,8 @@ async function restoreNomSession(source){
     }
   }catch(error){
     console.warn("NOM: session restore check failed:",error.message||error);
+    const status=document.getElementById("nomSessionStatus");
+    if(status)status.textContent="Session check error: "+(error.message||"Supabase could not restore the saved session.")+" Please tell us this message appeared.";
   }finally{
     nomSessionRestoreRunning=false;
   }
