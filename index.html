@@ -456,6 +456,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   <h1>My Profile</h1>
   <div class="panel" id="profileInfo">
     <p>You are browsing NOM as a guest.</p>
+    <p class="small" id="nomSessionStatus" aria-live="polite"></p>
     <button class="primary" onclick="showAuth('signup')">Create account</button>
     <button class="secondary" onclick="showAuth('login')">Log in</button>
   </div>
@@ -1891,7 +1892,7 @@ async function submitAuth(){
         email,
         password,
         options:{
-          emailRedirectTo:"https://nommobileapp.github.io/NOM-Lifestyle-Development/",
+          emailRedirectTo:"https://nommobileapp.github.io/nom-lifestyle-mockup/",
           data:{
             display_name:displayName,
             username:username
@@ -1923,7 +1924,14 @@ async function submitAuth(){
       if(error) throw error;
 
       currentUser = data.user;
-      message.textContent = "Login successful.";
+      const persistedSession=localStorage.getItem("nom-lifestyle-auth");
+      let savedRefreshToken=false;
+      try{savedRefreshToken=!!JSON.parse(persistedSession||"null")?.refresh_token;}catch(_){}
+      message.textContent = !persistedSession
+        ? "Signed in, but Safari did not save your session. Please tell us this message appeared."
+        : savedRefreshToken
+          ? "Login successful. Your session was saved on this device."
+          : "Login succeeded, but the saved session data looks incomplete. Please tell us this message appeared.";
       updateProfile();
       try{
         await uploadPendingRegistrationAvatar(data.user);
@@ -2027,6 +2035,16 @@ async function restoreNomSession(source){
     /* Do not let a delayed storage read override a newer sign-in/sign-out event. */
     if(revision===nomAuthEventRevision&&!currentUser&&data?.session){
       applyNomRestoredSession(data.session,source);
+    }else if(revision===nomAuthEventRevision&&!currentUser&&!data?.session){
+      const raw=localStorage.getItem("nom-lifestyle-auth");
+      let storedRefreshToken=false;
+      try{storedRefreshToken=!!JSON.parse(raw||"null")?.refresh_token;}catch(_){}
+      const status=document.getElementById("nomSessionStatus");
+      if(status)status.textContent=raw
+        ? (storedRefreshToken
+          ? "Session check: saved sign-in data exists, but Supabase could not restore it. Please log in and report this message."
+          : "Session check: saved data exists but is incomplete. Please log in and report this message.")
+        : "Session check: Safari has no saved NOM sign-in data. Please log in and report this message.";
     }
   }catch(error){
     console.warn("NOM: session restore check failed:",error.message||error);
