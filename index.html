@@ -435,20 +435,35 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 </section>
 
 <section id="tripPage" class="hidden">
-  <div class="eyebrow">YOUR JOURNEY</div>
+  <div class="eyebrow">NOM JOURNEY BEYOND</div>
   <h1>My Trip Planner</h1>
-  <p>Start building your next adventure.</p>
-  <div class="form-card">
-    <label>Trip destination</label>
-    <input id="tripDestination" placeholder="Where do you want to go?">
-    <label>Travel dates</label>
-    <input id="tripDates" placeholder="e.g. 10–20 December">
-    <label>Notes</label>
-    <textarea id="tripNotes" rows="3" placeholder="Your plans and ideas..."></textarea>
-    <button class="primary" onclick="saveTrip()">Save trip</button>
-    <div class="message" id="tripMessage"></div>
+  <p>One place for your flights, stays, discoveries and experiences.</p>
+  <div class="feed-card" style="background:linear-gradient(135deg,#292019,#171717 70%);border-color:#493020">
+    <div class="eyebrow">PLAN YOUR NEXT JOURNEY</div><h2 style="margin:8px 0">Where will you go?</h2>
+    <p style="margin:0">Create a private trip, build your itinerary and keep your plans together.</p>
   </div>
-  <div id="tripList"></div>
+  <div class="form-card" id="tripCreateCard">
+    <h2 style="margin-top:0">＋ Create a trip</h2>
+    <label for="tripDestination">Destination</label>
+    <input id="tripDestination" maxlength="160" placeholder="e.g. Bali, Indonesia" autocomplete="off">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><label for="tripStartDate">Start date</label><input id="tripStartDate" type="date"></div>
+      <div><label for="tripEndDate">End date</label><input id="tripEndDate" type="date"></div>
+    </div>
+    <label for="tripBudget">Optional trip budget</label>
+    <div style="display:grid;grid-template-columns:1fr 105px;gap:9px">
+      <input id="tripBudget" type="number" min="0" step="0.01" placeholder="Budget amount">
+      <select id="tripCurrency" style="width:100%;margin:7px 0 13px;padding:13px;background:#111;color:white;border:1px solid var(--border);border-radius:11px"><option value="USD">USD</option><option value="IDR">IDR</option><option value="EUR">EUR</option><option value="AUD">AUD</option><option value="SGD">SGD</option><option value="GBP">GBP</option></select>
+    </div>
+    <label for="tripNotes">Trip notes</label>
+    <textarea id="tripNotes" rows="3" maxlength="2000" placeholder="Who is travelling? What would you love to experience?"></textarea>
+    <p class="small" style="margin:8px 0">NOM Smart Planner is optional. When you choose to use it, it suggests ways to organise your saved places around your existing itinerary.</p>
+    <button class="primary" id="tripSaveButton" onclick="saveTrip()">Create my trip</button>
+    <div class="message" id="tripMessage" aria-live="polite"></div>
+    <p class="small" style="font-size:11px;margin-bottom:0">Your trips are private and visible only to you.</p>
+  </div>
+  <h2>Your journeys</h2><div id="tripList"><p class="small">Sign in to create and sync your trips.</p></div>
+  <div id="tripDetailPanel" class="hidden"></div>
 </section>
 
 <section id="profilePage" class="hidden">
@@ -572,7 +587,12 @@ let savedIds = JSON.parse(localStorage.getItem("nomSaved") || "[]");
 let savedPlaceRecords = [];
 let savedPlacesLoadedUser = null;
 let savedPlacesLoadingUser = null;
-let trips = JSON.parse(localStorage.getItem("nomTrips") || "[]");
+let savedPlacesError = "";
+let nomTripsCache = [];
+let activeNomTripId = null;
+let nomTripItemsCache = [];
+let nomTripExpensesCache = [];
+let nomTripExpensesError = "";
 
 /* NAVIGATION */
 function showPage(page){
@@ -588,7 +608,7 @@ function showPage(page){
   });
 
   if(page === "saved") renderSaved();
-  if(page === "trip") renderTrips();
+  if(page === "trip"){renderTrips();if(currentUser)loadTrips();}
   if(page === "profile") updateProfile();
   if(page === "community") loadCommunityFeed();
   if(page === "work") openWork();
@@ -1522,9 +1542,10 @@ function resetSavedPlacesForGuest(){
  renderSaved();
  renderPlaces();
 }
-async function loadSavedPlacesForUser(userId){
+async function loadSavedPlacesForUser(userId,force=false){
  if(!userId||!supabaseClient)return;
- if(savedPlacesLoadedUser===userId||savedPlacesLoadingUser===userId)return;
+ if(!force&&(savedPlacesLoadedUser===userId||savedPlacesLoadingUser===userId))return;
+ savedPlacesError="";
  savedPlacesLoadingUser=userId;
  savedIds=[];
  savedPlaceRecords=[];
@@ -1553,6 +1574,7 @@ async function loadSavedPlacesForUser(userId){
   savedIds=savedPlaceRecords.map(row=>String(row.place_key));
   savedPlacesLoadedUser=userId;
  }catch(error){
+  savedPlacesError=error.message||"Could not refresh saved places.";
   console.warn("NOM saved places sync:",error.message);
   savedPlaceRecords=[];
   savedIds=[];
@@ -1653,58 +1675,257 @@ function renderSaved(){
   :'<p>No saved places yet. Explore NOM and save somewhere you love.</p>';
 }
 
-/* TRIP PLANNER */
-function saveTrip(){
-  const destination = document.getElementById("tripDestination").value.trim();
-  const dates = document.getElementById("tripDates").value.trim();
-  const notes = document.getElementById("tripNotes").value.trim();
-
-  if(!destination){
-    document.getElementById("tripMessage").textContent = "Please enter a destination.";
-    return;
-  }
-
-  trips.push({
-    id:Date.now(),
-    destination,
-    dates,
-    notes
-  });
-
-  localStorage.setItem("nomTrips",JSON.stringify(trips));
-
-  document.getElementById("tripDestination").value = "";
-  document.getElementById("tripDates").value = "";
-  document.getElementById("tripNotes").value = "";
-  document.getElementById("tripMessage").textContent = "Trip saved on this device.";
-
-  renderTrips();
+/* NOM TRIP PLANNER — private, account-synced foundation */
+function tripDateLabel(start,end){
+ if(!start&&!end)return "Dates not set";
+ const fmt=v=>new Date(v+"T00:00:00").toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"});
+ return start&&end?fmt(start)+" – "+fmt(end):start?"From "+fmt(start):"Until "+fmt(end);
 }
-
+function tripMoney(value,currency){
+ if(value===null||value===undefined||value==="")return "Budget not set";
+ try{return new Intl.NumberFormat(undefined,{style:"currency",currency:currency||"USD",maximumFractionDigits:2}).format(Number(value));}
+ catch(_){return String(value)+" "+(currency||"USD");}
+}
 function renderTrips(){
-  const container = document.getElementById("tripList");
-
-  if(!trips.length){
-    container.innerHTML = "<p>No trips planned yet.</p>";
-    return;
-  }
-
-  container.innerHTML = trips.map(trip=>`
-    <div class="feed-card">
-      <h3>${escapeHTML(trip.destination)}</h3>
-      <p>${escapeHTML(trip.dates || "Dates not set")}</p>
-      <p>${escapeHTML(trip.notes || "")}</p>
-      <button class="text-button" onclick="deleteTrip(${trip.id})">Remove trip</button>
-    </div>
-  `).join("");
+ const box=document.getElementById("tripList"),detail=document.getElementById("tripDetailPanel");if(!box)return;
+ if(!currentUser){box.innerHTML='<div class="panel"><p>Log in or join NOM to create private trips that sync to your account.</p><button class="primary" onclick="showPage(\'profile\');showAuth(\'login\')">Log in</button><button class="secondary" onclick="showPage(\'profile\');showAuth(\'signup\')">Join NOM</button></div>';if(detail)detail.classList.add("hidden");return;}
+ if(!supabaseClient){box.innerHTML='<p class="small">Trip Planner is temporarily unavailable.</p>';return;}
+ if(!nomTripsCache.length){box.innerHTML='<div class="panel"><h3>No trips yet</h3><p>Your next journey starts here. Create your first trip above.</p></div>';return;}
+ box.innerHTML=nomTripsCache.map(t=>'<article class="feed-card" style="border-color:#493020"><div class="eyebrow">PRIVATE JOURNEY</div><h3>'+escapeHTML(t.destination)+'</h3><p>'+escapeHTML(tripDateLabel(t.start_date,t.end_date))+'</p>'+(t.budget_amount!==null?'<p class="place-meta">'+escapeHTML(tripMoney(t.budget_amount,t.budget_currency))+' planned budget</p>':'')+(t.notes?'<p>'+escapeHTML(t.notes)+'</p>':'')+'<div style="display:flex;gap:9px;flex-wrap:wrap"><button class="primary" onclick="openNomTrip(\''+t.id+'\')">Open itinerary</button><button class="secondary" onclick="deleteNomTrip(\''+t.id+'\')">Delete</button></div></article>').join("");
+}
+async function loadTrips(){
+ if(!currentUser||!supabaseClient)return;const uid=currentUser.id,box=document.getElementById("tripList");if(box)box.innerHTML='<p class="small">Loading your private trips…</p>';
+ const {data,error}=await supabaseClient.from("trips").select("id,owner_id,title,destination,start_date,end_date,notes,budget_amount,budget_currency,ai_enabled,status,created_at").eq("owner_id",uid).order("created_at",{ascending:false});
+ if(currentUser?.id!==uid)return;
+ if(error){console.warn("NOM trips:",error.message);if(box)box.innerHTML='<div class="panel"><p>Trips are not connected yet. The private Trip Planner schema and Data API access need to be enabled.</p><button class="secondary" onclick="loadTrips()">Try again</button></div>';return;}
+ nomTripsCache=Array.isArray(data)?data:[];renderTrips();
+}
+async function saveTrip(){
+ const msg=document.getElementById("tripMessage"),btn=document.getElementById("tripSaveButton");
+ if(!currentUser){msg.textContent="Please log in to create a private trip.";return;}
+ const destination=document.getElementById("tripDestination").value.trim(),start=document.getElementById("tripStartDate").value||null,end=document.getElementById("tripEndDate").value||null,bv=document.getElementById("tripBudget").value,budget=bv===""?null:Number(bv),currency=document.getElementById("tripCurrency").value,notes=document.getElementById("tripNotes").value.trim();
+ if(destination.length<2){msg.textContent="Please enter a destination.";return;}
+ if(start&&end&&end<start){msg.textContent="The end date must be after the start date.";return;}
+ if(budget!==null&&(!Number.isFinite(budget)||budget<0)){msg.textContent="Please enter a valid budget.";return;}
+ btn.disabled=true;btn.textContent="Creating trip…";msg.textContent="";
+ try{
+  const {data,error}=await supabaseClient.from("trips").insert({owner_id:currentUser.id,title:destination,destination,start_date:start,end_date:end,budget_amount:budget,budget_currency:currency,notes,ai_enabled:false,status:"planning"}).select("id,owner_id,title,destination,start_date,end_date,notes,budget_amount,budget_currency,ai_enabled,status,created_at").single();
+  if(error)throw error;nomTripsCache.unshift(data);
+  ["tripDestination","tripStartDate","tripEndDate","tripBudget","tripNotes"].forEach(id=>document.getElementById(id).value="");
+  msg.textContent="Your private trip has been created.";renderTrips();await openNomTrip(data.id);
+ }catch(e){msg.textContent=e.message||"Could not create your trip.";}
+ finally{btn.disabled=false;btn.textContent="Create my trip";}
+}
+async function deleteNomTrip(id){
+ if(!currentUser||!confirm("Delete this trip and its itinerary?"))return;
+ const {error}=await supabaseClient.from("trips").delete().eq("id",id).eq("owner_id",currentUser.id);
+ if(error){alert(error.message||"Could not delete this trip.");return;}
+ nomTripsCache=nomTripsCache.filter(t=>t.id!==id);if(activeNomTripId===id){activeNomTripId=null;nomTripItemsCache=[];nomTripExpensesCache=[];document.getElementById("tripDetailPanel").classList.add("hidden");}renderTrips();
+}
+async function openNomTrip(id){
+ if(!currentUser||!supabaseClient)return;const trip=nomTripsCache.find(t=>t.id===id);if(!trip)return;activeNomTripId=id;
+ const panel=document.getElementById("tripDetailPanel");panel.classList.remove("hidden");panel.innerHTML='<div class="panel"><p>Loading your itinerary and budget…</p></div>';const uid=currentUser.id;
+ const [itemsResult,expensesResult]=await Promise.all([
+  supabaseClient.from("trip_items").select("id,trip_id,owner_id,day_date,item_type,title,location,start_time,notes,external_url,estimated_cost,currency_code,sort_order").eq("trip_id",id).eq("owner_id",uid).order("day_date",{ascending:true,nullsFirst:false}).order("sort_order",{ascending:true}).order("start_time",{ascending:true}),
+  supabaseClient.from("trip_expenses").select("id,trip_id,owner_id,category,description,amount,currency_code,expense_date,created_at").eq("trip_id",id).eq("owner_id",uid).order("expense_date",{ascending:false}).order("created_at",{ascending:false})
+ ]);
+ if(currentUser?.id!==uid||activeNomTripId!==id)return;
+ if(itemsResult.error){panel.innerHTML='<div class="panel"><p>Could not load this itinerary: '+escapeHTML(itemsResult.error.message)+'</p><button class="secondary" onclick="openNomTrip(\''+id+'\')">Try again</button></div>';return;}
+ nomTripItemsCache=Array.isArray(itemsResult.data)?itemsResult.data:[];
+ nomTripExpensesCache=Array.isArray(expensesResult.data)?expensesResult.data:[];
+ nomTripExpensesError=expensesResult.error?.message||"";
+ renderNomTripDetail(trip);
+}
+async function toggleNomTripAI(tripId,enabled){
+ if(!currentUser||!supabaseClient)return;
+ const trip=nomTripsCache.find(t=>t.id===tripId);if(!trip)return;
+ const {error}=await supabaseClient.from("trips").update({ai_enabled:!!enabled}).eq("id",tripId).eq("owner_id",currentUser.id);
+ if(error){alert(error.message||"Could not update the AI setting.");return;}
+ trip.ai_enabled=!!enabled;renderNomTripDetail(trip);
+}
+function nomTripSavedPlaceRows(){
+ return (savedPlaceRecords||[]).map(row=>{
+  const p=row?.place_data||{},coords=p.geometry?.coordinates||[];
+  const rawLat=p.latitude??p.lat??p.coordinates?.lat??p.location?.lat??p.geometry?.location?.lat??(Array.isArray(coords)?coords[1]:null);
+  const rawLng=p.longitude??p.lng??p.lon??p.coordinates?.lng??p.coordinates?.lon??p.location?.lng??p.geometry?.location?.lng??(Array.isArray(coords)?coords[0]:null);
+  const lat=rawLat===null||rawLat===""?NaN:Number(rawLat),lng=rawLng===null||rawLng===""?NaN:Number(rawLng);
+  return {place_key:String(row.place_key||p.id||""),name:String(p.name||p.title||"Saved place"),category:String(p.category||p.type||p.place_type||"place"),address:String(p.address||p.location_name||p.vicinity||p.formatted_address||p.area||""),latitude:Number.isFinite(lat)&&Math.abs(lat)<=90?lat:null,longitude:Number.isFinite(lng)&&Math.abs(lng)<=180?lng:null,description:String(p.description||"").slice(0,260)};
+ }).filter(p=>p.place_key&&p.name).slice(0,40);
+}
+function nomTripSuggestionDate(trip,offset){
+ if(!trip.start_date)return "";
+ const d=new Date(trip.start_date+"T12:00:00");d.setDate(d.getDate()+Math.max(0,Number(offset)||0));
+ return d.toISOString().slice(0,10);
+}
+function nomTripDistanceKm(a,b){
+ if(!Number.isFinite(a.latitude)||!Number.isFinite(a.longitude)||!Number.isFinite(b.latitude)||!Number.isFinite(b.longitude))return Infinity;
+ const rad=n=>n*Math.PI/180,dLat=rad(b.latitude-a.latitude),dLng=rad(b.longitude-a.longitude);
+ const h=Math.sin(dLat/2)**2+Math.cos(rad(a.latitude))*Math.cos(rad(b.latitude))*Math.sin(dLng/2)**2;
+ return 6371*2*Math.asin(Math.sqrt(h));
+}
+function nomTripAreaTokens(value){
+ return [...new Set(String(value||"").toLowerCase().replace(/[^a-z0-9\s]/g," ").split(/\s+/).filter(word=>word.length>=4&&!["near","area","street","road","jalan","bali","indonesia"].includes(word)))];
+}
+function nomTripLocationOverlap(a,b){
+ const left=nomTripAreaTokens(a),right=new Set(nomTripAreaTokens(b));
+ return left.filter(word=>right.has(word)).length;
+}
+function nomTripScheduleForPlace(place,trip,items,clusterIndex,days){
+ const start=trip.start_date?new Date(trip.start_date+"T12:00:00"):null;
+ const dayRows=Array.from({length:days},(_,offset)=>{
+  const date=start?(()=>{const d=new Date(start);d.setDate(d.getDate()+offset);return d.toISOString().slice(0,10);})():null;
+  const rows=(items||[]).filter(item=>date&&item.day_date===date);
+  const overlap=rows.reduce((score,item)=>score+nomTripLocationOverlap(place.address,item.location),0);
+  return {offset,date,rows,overlap};
+ });
+ dayRows.sort((a,b)=>b.overlap-a.overlap||a.rows.length-b.rows.length||Math.abs(a.offset-(clusterIndex%days))-Math.abs(b.offset-(clusterIndex%days)));
+ const chosen=dayRows[0]||{offset:0,date:null,rows:[],overlap:0};
+ const slots=["09:00","10:30","12:00","13:30","15:00","16:30","18:00"];
+ const occupied=chosen.rows.map(item=>String(item.start_time||"").slice(0,5)).filter(v=>/^\d{2}:\d{2}$/.test(v)).map(v=>{const [h,m]=v.split(":").map(Number);return h*60+m;});
+ const available=slots.find(slot=>{const [h,m]=slot.split(":").map(Number),mins=h*60+m;return occupied.every(existing=>Math.abs(existing-mins)>=90);})||"";
+ const nearby=chosen.rows.find(item=>nomTripLocationOverlap(place.address,item.location)>0);
+ return {day_offset:chosen.offset,date:chosen.date,time:available,nearby_title:nearby?.title||"",nearby_location:nearby?.location||"",overlap:chosen.overlap};
+}
+function buildNomSmartSuggestions(trip,places,existingItems){
+ const days=trip.start_date&&trip.end_date?Math.max(1,Math.min(21,Math.floor((Date.parse(trip.end_date)-Date.parse(trip.start_date))/86400000)+1)):1;
+ const existing=new Set((existingItems||[]).map(x=>String(x.title||"").trim().toLowerCase()).filter(Boolean));
+ const candidates=places.filter(p=>!existing.has(p.name.trim().toLowerCase()));
+ const withCoords=candidates.filter(p=>p.latitude!==null&&p.longitude!==null),withoutCoords=candidates.filter(p=>!(p.latitude!==null&&p.longitude!==null)),clusters=[];
+ withCoords.forEach(place=>{
+  let best=null,bestDistance=Infinity;
+  clusters.forEach(cluster=>{
+   const center={latitude:cluster.reduce((s,p)=>s+p.latitude,0)/cluster.length,longitude:cluster.reduce((s,p)=>s+p.longitude,0)/cluster.length},d=nomTripDistanceKm(place,center);
+   if(d<=12&&d<bestDistance){best=cluster;bestDistance=d;}
+  });
+  if(best)best.push(place);else clusters.push([place]);
+ });
+ const areaGroups=new Map();
+ withoutCoords.forEach(place=>{
+  const key=place.address.toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+  if(key){if(!areaGroups.has(key))areaGroups.set(key,[]);areaGroups.get(key).push(place);}else clusters.push([place]);
+ });
+ for(const group of areaGroups.values())clusters.push(group);
+ clusters.forEach(cluster=>{
+  const ordered=[],remaining=cluster.slice();
+  if(remaining.length){ordered.push(remaining.shift());while(remaining.length){const last=ordered[ordered.length-1];let idx=0,dist=Infinity;remaining.forEach((p,i)=>{const d=nomTripDistanceKm(last,p);if(d<dist){dist=d;idx=i;}});ordered.push(remaining.splice(idx,1)[0]);}}
+  cluster.splice(0,cluster.length,...ordered);
+ });
+ clusters.sort((a,b)=>b.length-a.length);
+ const output=[];
+ clusters.forEach((cluster,clusterIndex)=>{
+  cluster.forEach((place,index)=>{
+   if(output.length>=24)return;
+   const hasCoords=place.latitude!==null&&place.longitude!==null,grouped=cluster.length>1;
+   const schedule=nomTripScheduleForPlace(place,trip,existingItems,clusterIndex,days);
+   const dayLabel=schedule.date?"day already containing a similar area":"the least busy trip day";
+   const reason=schedule.nearby_title
+    ?"Scheduled near "+schedule.nearby_title+" because the saved location appears to share the same area."
+    :"Suggested for "+dayLabel+" to balance the existing itinerary.";
+   const notes=[index===0?"Check opening hours and travel arrangements before visiting.":"Grouped with nearby saved places to reduce unnecessary backtracking.",schedule.time?"Suggested time leaves at least 90 minutes from other timed itinerary items.":"No clear time gap was available; choose a time manually before saving."].join(" ");
+   output.push({place_key:place.place_key,day_offset:schedule.day_offset,time:schedule.time,reason,notes,nearby_title:schedule.nearby_title,route_note:hasCoords?(grouped?"Nearby grouping uses approximate straight-line coordinates, not road distance or travel time.":"Coordinates are available; check the road route before setting off."):(place.address?"Area matching is based on saved address text; confirm the exact location.":"No location data is available, so confirm the location manually.")});
+  });
+ });
+ return output;
+}
+async function generateNomTripSuggestions(tripId){
+ const trip=nomTripsCache.find(t=>t.id===tripId),status=document.getElementById("tripAiMessage"),results=document.getElementById("tripAiSuggestions"),button=document.getElementById("tripAiButton");
+ if(!currentUser||!trip||activeNomTripId!==tripId)return;
+ button.disabled=true;button.textContent="Planning your saved places…";status.textContent="Refreshing your saved places…";results.innerHTML="";
+ try{
+  await loadSavedPlacesForUser(currentUser.id,true);
+  if(savedPlacesError)throw new Error(savedPlacesError);
+  const placesForAI=nomTripSavedPlaceRows();
+  if(!placesForAI.length)throw new Error("Save a few places first, then NOM can organise them into your trip.");
+  const suggestions=buildNomSmartSuggestions(trip,placesForAI,nomTripItemsCache);
+  if(!suggestions.length)throw new Error("All your saved places are already in this itinerary.");
+  window.nomTripSuggestions=suggestions.map(x=>({...x,trip_id:tripId}));
+  results.innerHTML=suggestions.map((x,i)=>{
+   const place=placesForAI.find(p=>p.place_key===String(x.place_key));if(!place)return "";
+   return '<article class="feed-card" style="margin:9px 0;padding:13px"><div class="eyebrow">Day '+(Number(x.day_offset)+1)+(x.time?' · '+escapeHTML(x.time):' · Choose a time')+'</div><strong>'+escapeHTML(place.name)+'</strong>'+(place.address?'<p class="small">'+escapeHTML(place.address)+'</p>':'')+'<p style="margin:7px 0">'+escapeHTML(x.reason)+'</p><p class="small">'+escapeHTML(x.route_note)+'</p><button class="secondary" type="button" onclick="useNomTripSuggestion('+i+')">Use suggestion</button></article>';
+  }).join("");
+  status.textContent="NOM Smart Planner organised your saved places. Review each suggestion, then edit it in your itinerary form.";
+ }catch(error){console.warn("NOM Smart Planner:",error);status.textContent=error?.message||"Smart Planner is temporarily unavailable.";}
+ finally{button.disabled=false;button.textContent="✦ Get suggestions";}
+}
+function useNomTripSuggestion(index){
+ const x=window.nomTripSuggestions?.[index],trip=nomTripsCache.find(t=>t.id===x?.trip_id);if(!x||!trip||activeNomTripId!==trip.id)return;
+ const place=nomTripSavedPlaceRows().find(p=>p.place_key===String(x.place_key));if(!place)return;
+ document.getElementById("tripItemTitle").value=place.name;document.getElementById("tripItemType").value="place";document.getElementById("tripItemDate").value=nomTripSuggestionDate(trip,x.day_offset);document.getElementById("tripItemLocation").value=place.address||"";document.getElementById("tripItemTime").value=/^\d{2}:\d{2}$/.test(x.time||"")?x.time:"";document.getElementById("tripItemNotes").value=[x.reason,x.notes].filter(Boolean).join("\n");
+ document.getElementById("tripItemMessage").textContent="Suggestion transferred. Edit the details before adding it to your itinerary.";document.getElementById("tripItemTitle").scrollIntoView({behavior:"smooth",block:"center"});
 }
 
-function deleteTrip(id){
-  trips = trips.filter(trip=>trip.id !== id);
-  localStorage.setItem("nomTrips",JSON.stringify(trips));
-  renderTrips();
+
+function nomTripBudgetMarkup(trip){
+ const currency=trip.budget_currency||"USD",budget=trip.budget_amount===null||trip.budget_amount===undefined?null:Number(trip.budget_amount);
+ const expenses=nomTripExpensesCache||[],spent=expenses.filter(x=>(x.currency_code||currency)===currency).reduce((sum,x)=>sum+Number(x.amount||0),0);
+ const estimated=nomTripItemsCache.filter(x=>(x.currency_code||currency)===currency&&x.estimated_cost!==null&&x.estimated_cost!==undefined).reduce((sum,x)=>sum+Number(x.estimated_cost||0),0);
+ const projected=spent+estimated,percent=budget!==null&&budget>0?Math.min(100,Math.round(projected/budget*100)):0,remaining=budget===null?null:budget-projected;
+ const alert=budget!==null&&budget>0?(projected>budget?'<p class="message" style="color:#ff8b72">Your projected total is over budget by '+escapeHTML(tripMoney(projected-budget,currency))+'.</p>':percent>=90?'<p class="message" style="color:#ffb36b">Your projected total uses '+percent+'% of your budget.</p>':percent>=70?'<p class="message">Your projected total uses '+percent+'% of your budget.</p>':''):'';
+ const expenseRows=expenses.length?[...expenses].sort((a,b)=>String(b.expense_date||"").localeCompare(String(a.expense_date||""))||String(b.created_at||"").localeCompare(String(a.created_at||""))).map(x=>'<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border)"><div style="min-width:0;flex:1"><strong>'+escapeHTML(x.description)+'</strong><div class="small">'+escapeHTML(String(x.category||"other").replace(/_/g," "))+' · '+escapeHTML(x.expense_date||"")+'</div></div><div style="text-align:right;white-space:nowrap"><strong>'+escapeHTML(tripMoney(x.amount,x.currency_code||currency))+'</strong><br><button class="text-button" type="button" onclick="deleteNomTripExpense(\''+x.id+'\')">Remove</button></div></div>').join(""):'<p class="small">No expenses recorded yet. Add your first expense below.</p>';
+ const currencies=["USD","IDR","EUR","AUD","SGD","GBP"];
+ const options=currencies.map(c=>'<option value="'+c+'" '+(c===currency?"selected":"")+'>'+c+'</option>').join("");
+ return '<section class="feed-card" style="border-color:#493020;margin:14px 0"><div class="eyebrow">TRIP FINANCES</div><h2 style="margin:7px 0 12px">Budget tracker</h2><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"><div class="panel"><div class="small">Total budget</div><strong>'+escapeHTML(budget===null?"Not set":tripMoney(budget,currency))+'</strong></div><div class="panel"><div class="small">Actual spent</div><strong>'+escapeHTML(tripMoney(spent,currency))+'</strong></div><div class="panel"><div class="small">Planned costs</div><strong>'+escapeHTML(tripMoney(estimated,currency))+'</strong></div><div class="panel"><div class="small">Projected total</div><strong>'+escapeHTML(tripMoney(projected,currency))+'</strong></div><div class="panel"><div class="small">Budget left after plans</div><strong>'+escapeHTML(remaining===null?"Set a budget":tripMoney(Math.max(0,remaining),currency))+'</strong></div><div class="panel"><div class="small">Projected budget used</div><strong>'+escapeHTML(budget!==null&&budget>0?percent+"%": "—")+'</strong></div></div>'+(budget!==null&&budget>0?'<div style="height:9px;background:#333;border-radius:20px;overflow:hidden;margin:12px 0"><div style="height:100%;width:'+percent+'%;background:'+(percent>=100?"#ff755f":percent>=70?"#ffb36b":"var(--orange)")+';border-radius:20px"></div></div>':'')+alert+'<p class="small">Planned costs are added to your projected total, not actual spending. When you pay for an itinerary item, use “Record as spent” on that item to move its estimate into actual expenses without counting it twice.</p>'+(nomTripExpensesError?'<p class="small">Expenses could not be loaded: '+escapeHTML(nomTripExpensesError)+' <button class="secondary" type="button" onclick="openNomTrip(\''+trip.id+'\')">Retry</button></p>':'')+'<details style="margin:12px 0"><summary style="cursor:pointer;color:var(--orange)">Set or change trip budget</summary><div style="display:grid;grid-template-columns:1fr 110px;gap:8px;margin-top:10px"><input id="tripBudgetEdit" type="number" min="0" step="0.01" value="'+(budget===null?"":escapeHTML(String(budget)))+'" placeholder="Budget amount" aria-label="Trip budget amount"><select id="tripBudgetCurrency" aria-label="Budget currency" style="background:#111;color:white;border:1px solid var(--border);border-radius:11px;padding:12px">'+options+'</select></div><button class="secondary" type="button" style="margin-top:8px" onclick="saveNomTripBudget(\''+trip.id+'\')">Save budget</button><div class="message" id="tripBudgetMessage"></div></details><h3 style="margin:16px 0 6px">Add an expense</h3><label for="tripExpenseDescription">What did you spend on?</label><input id="tripExpenseDescription" maxlength="160" placeholder="e.g. Dinner in Uluwatu"><div style="display:grid;grid-template-columns:1fr 1fr;gap:9px"><div><label for="tripExpenseCategory">Category</label><select id="tripExpenseCategory" style="width:100%;padding:13px;background:#111;color:white;border:1px solid var(--border);border-radius:11px;margin:7px 0 13px"><option value="food">Food</option><option value="accommodation">Accommodation</option><option value="flight">Flight</option><option value="transport">Transport</option><option value="activities">Activities</option><option value="shopping">Shopping</option><option value="other">Other</option></select></div><div><label for="tripExpenseAmount">Amount ('+escapeHTML(currency)+')</label><input id="tripExpenseAmount" type="number" min="0.01" step="0.01" placeholder="0.00"></div></div><label for="tripExpenseDate">Date</label><input id="tripExpenseDate" type="date" value="'+(()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")})()+'"><button class="primary" type="button" onclick="saveNomTripExpense(\''+trip.id+'\')">＋ Add expense</button><div class="message" id="tripExpenseMessage" aria-live="polite"></div><h3 style="margin:18px 0 4px">Expense history</h3>'+expenseRows+'</section>';
+}
+async function saveNomTripBudget(tripId){
+ if(!currentUser||activeNomTripId!==tripId)return;const trip=nomTripsCache.find(t=>t.id===tripId),msg=document.getElementById("tripBudgetMessage");if(!trip||!msg)return;
+ const raw=document.getElementById("tripBudgetEdit").value,currency=document.getElementById("tripBudgetCurrency").value,budget=raw===""?null:Number(raw);
+ if(budget!==null&&(!Number.isFinite(budget)||budget<0)){msg.textContent="Please enter a valid budget amount.";return;}
+ if(nomTripExpensesCache.length&&currency!==(trip.budget_currency||"USD")){msg.textContent="Keep the current currency after recording expenses so NOM does not miscalculate your totals. You can change it before adding expenses.";return;}
+ const {error}=await supabaseClient.from("trips").update({budget_amount:budget,budget_currency:currency}).eq("id",tripId).eq("owner_id",currentUser.id);
+ if(error){msg.textContent=error.message||"Could not update the budget.";return;}
+ trip.budget_amount=budget;trip.budget_currency=currency;nomTripExpensesCache=nomTripExpensesCache.map(x=>({...x}));renderNomTripDetail(trip);
+}
+async function saveNomTripExpense(tripId){
+ if(!currentUser||activeNomTripId!==tripId)return;const msg=document.getElementById("tripExpenseMessage"),description=document.getElementById("tripExpenseDescription").value.trim(),category=document.getElementById("tripExpenseCategory").value,amount=Number(document.getElementById("tripExpenseAmount").value),date=document.getElementById("tripExpenseDate").value||(()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")})(),trip=nomTripsCache.find(t=>t.id===tripId);
+ if(!trip||!description){msg.textContent="Please describe the expense.";return;}
+ if(!Number.isFinite(amount)||amount<=0){msg.textContent="Enter an amount greater than zero.";return;}
+ const {data,error}=await supabaseClient.from("trip_expenses").insert({trip_id:tripId,owner_id:currentUser.id,category,description,amount,currency_code:trip.budget_currency||"USD",expense_date:date}).select("id,trip_id,owner_id,category,description,amount,currency_code,expense_date,created_at").single();
+ if(error){msg.textContent=error.message||"Could not save this expense.";return;}
+ nomTripExpensesCache.unshift(data);renderNomTripDetail(trip);
+}
+async function deleteNomTripExpense(id){
+ if(!currentUser||!confirm("Remove this expense from your trip?"))return;
+ const {error}=await supabaseClient.from("trip_expenses").delete().eq("id",id).eq("owner_id",currentUser.id);
+ if(error){alert(error.message||"Could not remove this expense.");return;}
+ nomTripExpensesCache=nomTripExpensesCache.filter(x=>x.id!==id);renderNomTripDetail(nomTripsCache.find(t=>t.id===activeNomTripId));
 }
 
+function renderNomTripDetail(trip){
+ const panel=document.getElementById("tripDetailPanel"),groups={};nomTripItemsCache.forEach(x=>{const k=x.day_date||"unscheduled";(groups[k]||(groups[k]=[])).push(x);});
+ const keys=Object.keys(groups).sort((a,b)=>a==="unscheduled"?1:b==="unscheduled"?-1:a.localeCompare(b));
+ const list=keys.length?keys.map(day=>'<div class="feed-card"><h3>'+escapeHTML(day==="unscheduled"?"Unscheduled":new Date(day+"T00:00:00").toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long"}))+'</h3>'+groups[day].map(x=>'<div style="padding:10px 0;border-top:1px solid var(--border)"><div class="place-meta">'+escapeHTML(x.item_type.toUpperCase())+(x.start_time?' · '+escapeHTML(x.start_time.slice(0,5)):'')+'</div><strong>'+escapeHTML(x.title)+'</strong>'+(x.location?'<p>'+escapeHTML(x.location)+'</p>':'')+(x.notes?'<p>'+escapeHTML(x.notes)+'</p>':'')+(x.estimated_cost!==null&&x.estimated_cost!==undefined?'<p class="place-meta">Estimated cost · '+escapeHTML(tripMoney(x.estimated_cost,x.currency_code||trip.budget_currency||"USD"))+'</p><button class="secondary" type="button" onclick="recordNomTripItemAsSpent(\''+x.id+'\')">Record as spent</button>':'')+(x.external_url?'<p><a href="'+escapeHTML(x.external_url)+'" target="_blank" rel="noopener" style="color:var(--orange)">Open booking / details ↗</a></p>':'')+'<button class="text-button" onclick="deleteNomTripItem(\''+x.id+'\')">Remove item</button></div>').join("")+'</div>').join(""):'<p class="small">Your itinerary is empty. Add a flight, stay, activity or place below.</p>';
+ panel.innerHTML='<div class="panel" style="border-color:#493020"><button class="text-button" onclick="activeNomTripId=null;renderTrips();document.getElementById(\'tripDetailPanel\').classList.add(\'hidden\')">← Back to trips</button><div class="eyebrow">YOUR PRIVATE JOURNEY</div><h2 style="margin:8px 0">'+escapeHTML(trip.destination)+'</h2><p>'+escapeHTML(tripDateLabel(trip.start_date,trip.end_date))+'</p>'+(trip.budget_amount!==null?'<p class="place-meta">Planned budget · '+escapeHTML(tripMoney(trip.budget_amount,trip.budget_currency))+'</p>':'')+'</div>'+nomTripBudgetMarkup(trip)+'<h2>Day-by-day itinerary</h2>'+ '<div class="feed-card" style="border-color:#493020"><div class="eyebrow">NOM SMART PLANNER · OPTIONAL</div><h3 style="margin:7px 0">Plan a smoother route</h3><p class="small">NOM checks your existing days, locations and timed activities before suggesting a slot. It avoids close time conflicts, prefers days with matching nearby areas, and leaves existing plans untouched. Saved-place distances are approximate straight-line proximity, not road routes or travel times.</p><button class="primary" type="button" id="tripAiButton" onclick="generateNomTripSuggestions(&quot;'+trip.id+'&quot;)">✦ Get suggestions</button><div class="message" id="tripAiMessage" aria-live="polite"></div><div id="tripAiSuggestions"></div></div>'+list+'<div class="form-card"><h3 style="margin-top:0">＋ Add to itinerary</h3><label for="tripItemTitle">What would you like to add?</label><input id="tripItemTitle" maxlength="160" placeholder="e.g. Uluwatu Beach or hotel check-in"><div style="display:grid;grid-template-columns:1fr 1fr;gap:9px"><div><label for="tripItemType">Type</label><select id="tripItemType" style="width:100%;padding:13px;background:#111;color:white;border:1px solid var(--border);border-radius:11px;margin:7px 0 13px"><option value="place">Place</option><option value="flight">Flight</option><option value="stay">Accommodation</option><option value="activity">Activity</option><option value="meal">Food / meal</option><option value="transport">Transport</option><option value="note">Note</option></select></div><div><label for="tripItemDate">Day</label><input id="tripItemDate" type="date"></div></div><label for="tripItemLocation">Location</label><input id="tripItemLocation" maxlength="200" placeholder="Area or address"><label for="tripItemTime">Start time</label><input id="tripItemTime" type="time"><label for="tripItemCost">Estimated cost (optional)</label><input id="tripItemCost" type="number" min="0" step="0.01" placeholder="Amount"><label for="tripItemUrl">External booking / details link</label><input id="tripItemUrl" type="url" placeholder="https://…"><label for="tripItemNotes">Notes</label><textarea id="tripItemNotes" rows="2" maxlength="1500" placeholder="Details or reminders"></textarea><button class="primary" onclick="saveNomTripItem(\''+trip.id+'\')">Add to itinerary</button><div class="message" id="tripItemMessage"></div></div>';
+}
+async function saveNomTripItem(tripId){
+ if(!currentUser||activeNomTripId!==tripId)return;const msg=document.getElementById("tripItemMessage"),title=document.getElementById("tripItemTitle").value.trim(),type=document.getElementById("tripItemType").value,day=document.getElementById("tripItemDate").value||null,location=document.getElementById("tripItemLocation").value.trim(),time=document.getElementById("tripItemTime").value||null,cv=document.getElementById("tripItemCost").value,cost=cv===""?null:Number(cv),url=document.getElementById("tripItemUrl").value.trim(),notes=document.getElementById("tripItemNotes").value.trim();
+ if(!title){msg.textContent="Please enter an itinerary item.";return;}if(cost!==null&&(!Number.isFinite(cost)||cost<0)){msg.textContent="Please enter a valid estimated cost.";return;}
+ if(url){try{const u=new URL(url);if(!["http:","https:"].includes(u.protocol))throw new Error();}catch(_){msg.textContent="Please enter a valid web link.";return;}}
+ const {data,error}=await supabaseClient.from("trip_items").insert({trip_id:tripId,owner_id:currentUser.id,day_date:day,item_type:type,title,location,start_time:time,notes,external_url:url||null,estimated_cost:cost,currency_code:nomTripsCache.find(t=>t.id===tripId)?.budget_currency||"USD"}).select("id,trip_id,owner_id,day_date,item_type,title,location,start_time,notes,external_url,estimated_cost,currency_code,sort_order").single();
+ if(error){msg.textContent=error.message||"Could not add this item.";return;}nomTripItemsCache.push(data);renderNomTripDetail(nomTripsCache.find(t=>t.id===tripId));
+}
+async function recordNomTripItemAsSpent(id){
+ if(!currentUser||!supabaseClient)return;
+ const item=nomTripItemsCache.find(x=>x.id===id),trip=nomTripsCache.find(t=>t.id===activeNomTripId);
+ if(!item||!trip||item.estimated_cost===null||item.estimated_cost===undefined)return;
+ const amount=Number(item.estimated_cost);if(!Number.isFinite(amount)||amount<=0){alert("This item has no positive estimated cost to record.");return;}
+ const categoryMap={meal:"food",stay:"accommodation",flight:"flight",transport:"transport",activity:"activities",place:"activities",note:"other"};
+ const category=categoryMap[item.item_type]||"other",date=item.day_date||(()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")})();
+ const {error:updateError}=await supabaseClient.from("trip_items").update({estimated_cost:null}).eq("id",id).eq("owner_id",currentUser.id);
+ if(updateError){alert(updateError.message||"Could not move this estimate.");return;}
+ item.estimated_cost=null;
+ const {data,error}=await supabaseClient.from("trip_expenses").insert({trip_id:trip.id,owner_id:currentUser.id,category,description:item.title,amount,currency_code:item.currency_code||trip.budget_currency||"USD",expense_date:date}).select("id,trip_id,owner_id,category,description,amount,currency_code,expense_date,created_at").single();
+ if(error){
+  const {error:restoreError}=await supabaseClient.from("trip_items").update({estimated_cost:amount}).eq("id",id).eq("owner_id",currentUser.id);
+  if(!restoreError)item.estimated_cost=amount;
+  alert(error.message||"Could not record this expense. "+(restoreError?"The estimate could not be restored automatically; please check this item.":"The estimate has been restored."));
+  renderNomTripDetail(trip);return;
+ }
+ nomTripExpensesCache.unshift(data);renderNomTripDetail(trip);
+}
+async function deleteNomTripItem(id){
+ if(!currentUser)return;const {error}=await supabaseClient.from("trip_items").delete().eq("id",id).eq("owner_id",currentUser.id);if(error){alert(error.message||"Could not remove this item.");return;}
+ nomTripItemsCache=nomTripItemsCache.filter(x=>x.id!==id);renderNomTripDetail(nomTripsCache.find(t=>t.id===activeNomTripId));
+}
 function escapeHTML(value){
   return String(value).replace(/[&<>"']/g,char=>({
     "&":"&amp;",
@@ -1988,6 +2209,7 @@ async function logout(){
 
     currentUser = null;
     resetSavedPlacesForGuest();
+    nomTripsCache=[];activeNomTripId=null;nomTripItemsCache=[];nomTripExpensesCache=[];nomTripExpensesError="";renderTrips();
     updateProfile();
     message.textContent = "You have logged out.";
   }catch(error){
@@ -2088,6 +2310,7 @@ function initialiseApp(){
         }
       }else{
         resetSavedPlacesForGuest();
+        nomTripsCache=[];activeNomTripId=null;nomTripItemsCache=[];nomTripExpensesCache=[];nomTripExpensesError="";renderTrips();
         if(nomNotificationChannel){supabaseClient.removeChannel(nomNotificationChannel);nomNotificationChannel=null;}
         renderNomUnreadBadges(0);
       }
