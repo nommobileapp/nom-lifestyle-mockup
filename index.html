@@ -560,6 +560,13 @@ window.NOM_COMMUNITY_MAX_FILE=50*1024*1024;
 const SUPABASE_URL = "https://ojzzroswtzjnnoigjpuc.supabase.co";
 const SUPABASE_KEY = "sb_publishable_xc8mdZ1eb8XtEyxtn3tfXg_DnqNNfjI";
 
+const NOM_AUTH_STORAGE_KEY = (()=>{
+  const path=(window.location.pathname||"").toLowerCase();
+  if(path.includes("/nom-lifestyle-development/"))return "nom-lifestyle-auth-dev";
+  if(path.includes("/nom-search-preview/"))return "nom-lifestyle-auth-preview";
+  return "nom-lifestyle-auth-live";
+})();
+
 const supabaseClient = window.supabase?.createClient
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
       auth: {
@@ -567,7 +574,7 @@ const supabaseClient = window.supabase?.createClient
         autoRefreshToken: true,
         detectSessionInUrl: true,
         storage: window.localStorage,
-        storageKey: "nom-lifestyle-auth"
+        storageKey: NOM_AUTH_STORAGE_KEY
       }
     })
   : null;
@@ -607,7 +614,7 @@ function showPage(page){
     button.classList.toggle("active",button.dataset.page === page);
   });
 
-  if(page === "saved") renderSaved();
+  if(page === "saved"){renderSaved();if(currentUser)loadSavedPlacesForUser(currentUser.id,true);}
   if(page === "trip"){renderTrips();if(currentUser)loadTrips();}
   if(page === "profile") updateProfile();
   if(page === "community") loadCommunityFeed();
@@ -1545,10 +1552,12 @@ function resetSavedPlacesForGuest(){
 async function loadSavedPlacesForUser(userId,force=false){
  if(!userId||!supabaseClient)return;
  if(!force&&(savedPlacesLoadedUser===userId||savedPlacesLoadingUser===userId))return;
+ const sameUserCache=savedPlacesLoadedUser===userId;
+ const previousRecords=sameUserCache?savedPlaceRecords.slice():[];
+ const previousIds=sameUserCache?savedIds.slice():[];
  savedPlacesError="";
  savedPlacesLoadingUser=userId;
- savedIds=[];
- savedPlaceRecords=[];
+ if(!sameUserCache){savedIds=[];savedPlaceRecords=[];}
  try{
   const guestIds=getGuestSavedIds();
   const guestRecords=getSavedPlaceRecords().filter(place=>guestIds.includes(String(place.id)));
@@ -1576,8 +1585,11 @@ async function loadSavedPlacesForUser(userId,force=false){
  }catch(error){
   savedPlacesError=error.message||"Could not refresh saved places.";
   console.warn("NOM saved places sync:",error.message);
-  savedPlaceRecords=[];
-  savedIds=[];
+  if(currentUser?.id===userId){
+   savedPlaceRecords=previousRecords;
+   savedIds=previousIds;
+   if(sameUserCache)savedPlacesLoadedUser=userId;
+  }
  }finally{
   if(savedPlacesLoadingUser===userId)savedPlacesLoadingUser=null;
   renderSaved();
@@ -1670,11 +1682,13 @@ function renderSaved(){
   [...legacy,...stored].forEach(place=>byId.set(String(place.id),place));
   list=[...byId.values()].filter(place=>guestIds.includes(String(place.id)));
  }
- document.getElementById("savedPlaces").innerHTML=list.length
+ const retry=savedPlacesError
+  ?'<p class="small">Could not refresh Saved Places. Your previous saved list has been kept. <button class="secondary" onclick="loadSavedPlacesForUser(currentUser.id,true)">Retry</button></p>'
+  :"";
+ document.getElementById("savedPlaces").innerHTML=retry+(list.length
   ?list.map(placeCard).join("")
-  :'<p>No saved places yet. Explore NOM and save somewhere you love.</p>';
+  :(savedPlacesError?'<p>Saved Places could not be loaded. Please try again.</p>':'<p>No saved places yet. Explore NOM and save somewhere you love.</p>'));
 }
-
 /* NOM TRIP PLANNER — private, account-synced foundation */
 function tripDateLabel(start,end){
  if(!start&&!end)return "Dates not set";
@@ -2258,7 +2272,7 @@ async function restoreNomSession(source){
     if(revision===nomAuthEventRevision&&!currentUser&&data?.session){
       applyNomRestoredSession(data.session,source);
     }else if(revision===nomAuthEventRevision&&!currentUser&&!data?.session){
-      const raw=localStorage.getItem("nom-lifestyle-auth");
+      const raw=localStorage.getItem(NOM_AUTH_STORAGE_KEY);
       let storedRefreshToken=false;
       try{storedRefreshToken=!!JSON.parse(raw||"null")?.refresh_token;}catch(_){}
       const status=document.getElementById("nomSessionStatus");
