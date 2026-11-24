@@ -128,7 +128,7 @@ p{color:var(--muted);line-height:1.5}
 .category.active{background:var(--lime);color:#111;border-color:var(--lime)}
 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
 .place{cursor:pointer}.community-post{cursor:pointer}
-.detail-overlay{position:fixed!important;inset:0!important;width:100vw;height:100vh;height:100dvh;min-height:100vh;z-index:99999;background:#101010;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:none;visibility:hidden}.detail-overlay.open{display:block!important;visibility:visible!important}.detail-topbar{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:calc(12px + env(safe-area-inset-top)) 18px;background:#101010ed;border-bottom:1px solid var(--border)}.detail-back{display:flex;align-items:center;gap:7px;min-width:72px;background:transparent;border:0;color:var(--white);font-size:16px;padding:8px 0}.detail-back span{font-size:13px}.detail-close{width:42px;height:42px;border-radius:50%;background:var(--panel2);color:white;border:1px solid var(--border);font-size:23px}.detail-body{max-width:760px;margin:auto;padding-bottom:40px}.detail-gallery{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:5px}.detail-gallery img{width:100%;min-width:100%;height:min(68vh,560px);object-fit:cover;scroll-snap-align:center}.detail-copy{padding:22px 20px}.detail-copy h1{font-size:30px}.detail-location{color:var(--lime);font-size:13px}.detail-description{color:#ddd;font-size:15px;line-height:1.7;white-space:pre-wrap}.detail-credit{font-size:11px;color:var(--muted)}
+.detail-overlay{position:fixed!important;inset:0!important;width:100vw;height:100vh;height:100dvh;min-height:100vh;z-index:99999;background:#101010;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:none;visibility:hidden}.detail-overlay.open{display:block!important;visibility:visible!important}.detail-topbar{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:calc(12px + env(safe-area-inset-top)) 18px;background:#101010ed;border-bottom:1px solid var(--border)}.detail-back{display:flex;align-items:center;gap:7px;min-width:72px;background:transparent;border:0;color:var(--white);font-size:16px;padding:8px 0}.detail-back span{font-size:13px}.detail-close{width:42px;height:42px;border-radius:50%;background:var(--panel2);color:white;border:1px solid var(--border);font-size:23px}.detail-body{max-width:760px;margin:auto;padding-bottom:40px}.detail-gallery{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:5px}.detail-gallery img{width:100%;min-width:100%;height:min(68vh,560px);object-fit:cover;scroll-snap-align:center}.detail-copy{padding:22px 20px}.detail-copy h1{font-size:30px}.detail-location{color:var(--lime);font-size:13px}.detail-description{color:#ddd;font-size:15px;line-height:1.7;white-space:pre-wrap}.detail-credit{font-size:11px;color:var(--muted)}.detail-directions{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}.detail-directions a{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:11px 16px;border-radius:24px;text-decoration:none;font-size:13px;font-weight:700}.detail-directions .maps-link{background:var(--orange);color:#111}.detail-directions .waze-link{background:var(--panel2);color:var(--white);border:1px solid var(--border)}
 .place{
   background:var(--panel);
   border:1px solid var(--border);
@@ -178,6 +178,25 @@ p{color:var(--muted);line-height:1.5}
   margin:12px 0;
 }
 .feed-card p{margin-bottom:8px}
+
+/* SHARE TO NOM — universal community composer */
+.nom-share-card{background:linear-gradient(145deg,#241c17,#191919 72%);border:1px solid #493020;border-radius:20px;padding:20px;margin:18px 0}
+.nom-share-card h3{font-size:19px;margin:7px 0}
+.nom-share-card p{margin:6px 0 14px}
+.nom-share-composer{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:18px;margin:14px 0}
+.nom-share-composer textarea,.nom-share-composer input,.nom-share-composer select{width:100%;background:#111;color:white;border:1px solid var(--border);border-radius:12px;padding:13px;margin:7px 0 13px}
+.nom-share-composer textarea{min-height:120px;resize:vertical;line-height:1.5}
+.nom-share-composer label{font-size:12px;color:var(--muted)}
+.nom-share-types{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.nom-share-types button{font-size:11px;color:var(--lime);background:#252b1b;border:1px solid #414c2a;border-radius:20px;padding:7px 10px}
+.nom-share-preview{display:flex;gap:9px;overflow-x:auto;margin:8px 0 14px}
+.nom-share-preview img,.nom-share-preview video{width:94px;height:94px;object-fit:cover;border-radius:12px;background:#111}
+.nom-share-preview audio{width:220px;max-width:80vw}
+.nom-share-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}
+.nom-share-actions button{margin:0;position:relative;z-index:2;pointer-events:auto;touch-action:manipulation}
+#nomSharePublish{min-height:48px;min-width:140px;position:relative;z-index:5;pointer-events:auto;touch-action:manipulation}
+.nom-share-hint{font-size:11px;color:var(--muted);line-height:1.5}
+
 .form-card{
   background:var(--panel);
   border:1px solid var(--border);
@@ -226,7 +245,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 .community-upload input,.community-upload textarea,.community-upload select{width:100%;background:#111;color:white;border:1px solid var(--border);border-radius:11px;padding:13px;margin:7px 0 13px}
 .community-upload input[type=file]{padding:11px;font-size:12px}
 .community-post{background:var(--panel);border:1px solid var(--border);border-radius:17px;padding:14px;margin:12px 0;overflow:hidden}
-.community-post img,.community-post video{width:100%;max-height:300px;object-fit:cover;border-radius:12px;display:block}.community-post video{background:#080808}
+.community-post .community-post-media{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;object-position:center;border-radius:12px;margin:8px 0;background:#080808}
 .community-post .post-meta{font-size:11px;color:var(--lime);margin:9px 0 4px}
 .community-post .post-author{font-size:12px;color:var(--orange)}
 .community-post .post-status{font-size:11px;color:var(--lime);margin-top:8px}
@@ -234,7 +253,54 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   .cards{grid-template-columns:1fr}
   .hero h1{font-size:29px}
 }
-.work-intro{background:linear-gradient(135deg,#2a201a,#191919);border:1px solid #493020;border-radius:20px;padding:20px;margin:12px 0}.work-demo{background:var(--panel);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin:14px 0}.work-cover{height:175px;position:relative}.work-cover>img{width:100%;height:100%;object-fit:cover}.work-avatar{width:64px!important;height:64px!important;border-radius:50%;border:3px solid var(--panel);position:absolute;bottom:-22px;left:15px}.work-demo-body{padding:28px 15px 15px}.work-role{font-size:11px;color:var(--lime);letter-spacing:1.4px;font-weight:bold}.work-tags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.work-tag{font-size:11px;background:#292929;border:1px solid var(--border);border-radius:20px;padding:6px 9px}.work-gallery{display:grid;grid-template-columns:1fr 1fr;gap:7px}.work-gallery img{width:100%;height:140px;object-fit:cover;border-radius:9px}.work-field{width:100%;background:#111;color:white;border:1px solid var(--border);border-radius:11px;padding:13px;margin:7px 0 13px}.work-media-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0}.work-media-card img,.work-media-card video{width:100%;max-height:260px;object-fit:cover;border-radius:9px}.work-media-card audio{width:100%}.work-progress{height:7px;background:#333;border-radius:9px;overflow:hidden}.work-progress span{display:block;height:100%;width:0;background:var(--lime)}.nom-work-entry{cursor:pointer;transition:transform .18s ease,border-color .18s ease}.nom-work-entry:active{transform:scale(.985)}.nom-work-entry:focus-visible{outline:2px solid var(--lime);outline-offset:3px}.work-member-card{background:var(--panel);border:1px solid var(--border);border-radius:15px;padding:15px;margin:10px 0;cursor:pointer}.work-member-card:active{border-color:var(--orange)}.work-member-identity{color:var(--lime);font-size:13px;font-weight:bold}.nom-identity-row{display:inline-flex;align-items:center;gap:9px;min-width:0;vertical-align:middle}.nom-member-avatar{width:34px;height:34px;min-width:34px;border-radius:50%;object-fit:cover;border:1px solid var(--orange);background:#292929;display:inline-block}.nom-member-avatar.compact{width:28px;height:28px;min-width:28px}.nom-chat-identity{display:flex;align-items:center;gap:10px}.nom-chat-identity .nom-member-avatar{width:38px;height:38px;min-width:38px}.work-member-card h3{margin:7px 0}.work-member-card p{font-size:13px;margin:6px 0}.work-portfolio-view{border:1px solid var(--orange);border-radius:18px;padding:17px;margin:16px 0;background:#191613}.work-portfolio-view .work-media-card{margin:12px 0}.work-card-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}.work-card-actions button{margin:0}.work-expandable{cursor:zoom-in}.work-lightbox{position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.97);display:flex;align-items:center;justify-content:center;padding:18px}.work-lightbox.hidden{display:none}.work-lightbox img,.work-lightbox video{max-width:100%;max-height:88vh;object-fit:contain;border-radius:8px}.work-lightbox-close{position:absolute;top:calc(env(safe-area-inset-top) + 12px);right:14px;width:44px;height:44px;border-radius:50%;border:1px solid #666;background:#222;color:#fff;font-size:26px}.nom-chat-overlay{position:fixed;inset:0;z-index:11900;background:#101010;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 12px)}.nom-chat-overlay.hidden{display:none}.nom-chat-top{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:12px}.nom-chat-messages{flex:1;overflow:auto;padding:14px 2px;display:flex;flex-direction:column;gap:10px}.nom-chat-bubble{max-width:84%;padding:10px 13px;border-radius:15px;background:#292929;align-self:flex-start;overflow-wrap:anywhere}.nom-chat-bubble.mine{background:#49301e;align-self:flex-end}.nom-chat-bubble small{display:block;color:#bbb;font-size:10px;margin-top:5px}.nom-chat-compose{display:flex;gap:8px;align-items:flex-end}.nom-chat-compose textarea{flex:1;min-height:48px;max-height:120px;background:#181818;color:white;border:1px solid var(--border);border-radius:12px;padding:12px}.nom-inbox-item{padding:12px 0;border-bottom:1px solid var(--border)}.nom-unread-badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;margin-left:7px;border-radius:12px;background:var(--orange);color:#111;font-size:11px;font-weight:800;vertical-align:middle}.nom-unread-badge.hidden{display:none}.nom-inbox-item.has-unread strong{color:var(--lime)}.nom-inbox-item .nom-unread-label{display:inline-block;margin-left:7px;color:var(--orange);font-size:11px;font-weight:bold}</style>
+.work-intro{background:linear-gradient(135deg,#2a201a,#191919);border:1px solid #493020;border-radius:20px;padding:20px;margin:12px 0}.work-demo{background:var(--panel);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin:14px 0}.work-cover{height:175px;position:relative}.work-cover>img{width:100%;height:100%;object-fit:cover}.work-avatar{width:64px!important;height:64px!important;border-radius:50%;border:3px solid var(--panel);position:absolute;bottom:-22px;left:15px}.work-demo-body{padding:28px 15px 15px}.work-role{font-size:11px;color:var(--lime);letter-spacing:1.4px;font-weight:bold}.work-tags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.work-tag{font-size:11px;background:#292929;border:1px solid var(--border);border-radius:20px;padding:6px 9px}.work-gallery{display:grid;grid-template-columns:1fr 1fr;gap:7px}.work-gallery img{width:100%;height:140px;object-fit:cover;border-radius:9px}.work-field{width:100%;background:#111;color:white;border:1px solid var(--border);border-radius:11px;padding:13px;margin:7px 0 13px}.work-media-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0}.work-media-card img,.work-media-card video{width:100%;max-height:260px;object-fit:cover;border-radius:9px}.work-media-card audio{width:100%}.work-progress{height:7px;background:#333;border-radius:9px;overflow:hidden}.work-progress span{display:block;height:100%;width:0;background:var(--lime)}.nom-work-entry{cursor:pointer;transition:transform .18s ease,border-color .18s ease}.nom-work-entry:active{transform:scale(.985)}.nom-work-entry:focus-visible{outline:2px solid var(--lime);outline-offset:3px}.work-member-card{background:var(--panel);border:1px solid var(--border);border-radius:15px;padding:15px;margin:10px 0;cursor:pointer}.work-member-card:active{border-color:var(--orange)}.work-member-identity{color:var(--lime);font-size:13px;font-weight:bold}.nom-identity-row{display:inline-flex;align-items:center;gap:9px;min-width:0;vertical-align:middle}.nom-member-avatar{width:34px;height:34px;min-width:34px;border-radius:50%;object-fit:cover;border:1px solid var(--orange);background:#292929;display:inline-block}.nom-member-avatar.compact{width:28px;height:28px;min-width:28px}.nom-chat-identity{display:flex;align-items:center;gap:10px}.nom-chat-identity .nom-member-avatar{width:38px;height:38px;min-width:38px}.work-member-card h3{margin:7px 0}.work-member-card p{font-size:13px;margin:6px 0}.work-portfolio-view{border:1px solid var(--orange);border-radius:18px;padding:17px;margin:16px 0;background:#191613}.work-portfolio-view .work-media-card{margin:12px 0}.work-public-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:14px 0}.work-public-tile{position:relative;aspect-ratio:1/1;min-width:0;overflow:hidden;border-radius:9px;background:#242424;border:1px solid var(--border);cursor:zoom-in}.work-public-tile img,.work-public-tile video{width:100%;height:100%;object-fit:cover;display:block}.work-public-tile.audio{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px;color:var(--lime);font-size:12px;text-align:center;cursor:pointer}.work-public-tile.audio .audio-symbol{font-size:32px}.work-public-tile-caption{font-size:10px;color:#ddd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.work-public-tile.video:after{content:'▶';position:absolute;right:8px;bottom:8px;background:#000b;color:#fff;border-radius:20px;padding:4px 7px;font-size:11px;pointer-events:none}@media(min-width:600px){.work-public-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}}.work-card-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}.work-card-actions button{margin:0}.work-expandable{cursor:zoom-in}.work-lightbox{position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.97);display:flex;align-items:center;justify-content:center;padding:18px}.work-lightbox.hidden{display:none}.work-lightbox img,.work-lightbox video{max-width:100%;max-height:88vh;object-fit:contain;border-radius:8px}.work-lightbox-close{position:absolute;top:calc(env(safe-area-inset-top) + 12px);right:14px;width:44px;height:44px;border-radius:50%;border:1px solid #666;background:#222;color:#fff;font-size:26px}.nom-chat-overlay{position:fixed;inset:0;z-index:11900;background:#101010;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 12px)}.nom-chat-overlay.hidden{display:none}.nom-chat-top{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:12px}.nom-chat-messages{flex:1;overflow:auto;padding:14px 2px;display:flex;flex-direction:column;gap:10px}.nom-chat-bubble{max-width:84%;padding:10px 13px;border-radius:15px;background:#292929;align-self:flex-start;overflow-wrap:anywhere}.nom-chat-bubble.mine{background:#49301e;align-self:flex-end}.nom-chat-bubble small{display:block;color:#bbb;font-size:10px;margin-top:5px}.nom-chat-compose{display:flex;gap:8px;align-items:flex-end}.nom-chat-compose textarea{flex:1;min-height:48px;max-height:120px;background:#181818;color:white;border:1px solid var(--border);border-radius:12px;padding:12px}.nom-inbox-item{padding:12px 0;border-bottom:1px solid var(--border)}.nom-unread-badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;margin-left:7px;border-radius:12px;background:var(--orange);color:#111;font-size:11px;font-weight:800;vertical-align:middle}.nom-unread-badge.hidden{display:none}.nom-inbox-item.has-unread strong{color:var(--lime)}.nom-inbox-item .nom-unread-label{display:inline-block;margin-left:7px;color:var(--orange);font-size:11px;font-weight:bold}/* NOM UNIVERSAL SEARCH */
+.nom-universal-search{background:#151515;border:1px solid var(--border);border-radius:17px;padding:13px;margin:4px 0 18px}
+.nom-search-tabs{display:flex;gap:7px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
+.nom-search-tabs::-webkit-scrollbar{display:none}
+.nom-search-tab{flex:0 0 auto;border:1px solid var(--border);background:var(--panel2);color:var(--white);border-radius:22px;padding:8px 13px;font-size:12px;white-space:nowrap}
+.nom-search-tab.active{background:var(--lime);border-color:var(--lime);color:#111;font-weight:700}
+.nom-search-group{margin:12px 0 17px}
+.nom-search-group h3{font-size:14px;color:var(--lime);margin:0 0 9px;display:flex;justify-content:space-between;align-items:center}
+.nom-search-group h3 span{font-size:11px;color:var(--muted);font-weight:400}
+.nom-search-result{display:flex;gap:11px;align-items:center;padding:11px 0;border-top:1px solid #303030;min-width:0}
+.nom-search-thumb{width:58px;height:58px;flex:0 0 58px;border-radius:11px;object-fit:cover;background:#282828}
+.nom-search-placeholder{align-items:center;justify-content:center;background:linear-gradient(145deg,#30302d,#1e2020);font-size:25px;border:1px solid #393939}
+/* Photo retrieval test build: preserve NOM visual fallback when no licensed image is available. */
+.nom-search-result-copy{min-width:0;flex:1}
+.nom-search-result-copy strong{display:block;color:var(--white);font-size:13px;overflow-wrap:anywhere}
+.nom-search-result-copy small{display:block;color:var(--muted);font-size:11px;line-height:1.45;margin-top:3px;overflow-wrap:anywhere}
+.nom-search-kind{color:var(--orange);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+.nom-search-empty,.nom-search-hint{font-size:12px;color:var(--muted);padding:12px 2px}
+.nom-search-loading{color:var(--lime);font-size:12px;padding:14px 2px}
+
+/* NOM MUSIC — Apple previews + embedded Spotify, persistent dock */
+.nom-music-toggle{position:fixed;right:16px;bottom:88px;z-index:70;width:48px;height:48px;display:grid;place-items:center;border:1px solid #454545;border-radius:50%;background:#1b1d1f;color:var(--white);padding:0;font-size:23px;line-height:1;box-shadow:0 4px 18px #000b}
+.nom-music-toggle.active{border-color:var(--orange);color:var(--orange)}
+.nom-music-panel{position:fixed;left:10px;right:10px;bottom:142px;z-index:69;background:#1b1d1f;border:1px solid #383838;border-radius:17px;padding:12px;box-shadow:0 8px 30px #000b;max-width:540px;margin:auto;max-height:65vh;overflow-y:auto}
+.nom-music-panel.closed{left:-10000px;right:auto;bottom:0;visibility:visible;pointer-events:none}
+.nom-music-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.nom-music-panel input{width:100%;box-sizing:border-box;background:#101112;color:#f5f5f2;border:1px solid #454545;border-radius:10px;padding:11px;margin:8px 0}
+.nom-music-panel button{border:1px solid #555;border-radius:999px;padding:8px 11px;background:#282a2c;color:#f5f5f2}
+.nom-music-panel button.primary{background:var(--orange);color:#111;border:0;font-weight:700}
+.nom-music-panel.closed .nom-music-expanded{display:block}
+.nom-music-panel.closed #nomSpotifyEmbed{display:block!important}
+#nomSpotifyEmbed{margin-top:10px;overflow:hidden;border-radius:12px;min-height:0}
+#nomSpotifyEmbed iframe{width:100%;height:152px;max-width:100%;border:0;border-radius:12px}
+.nom-music-result{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid #383838}
+.nom-music-result img{width:46px;height:46px;border-radius:8px;object-fit:cover;flex-shrink:0}
+.nom-music-result-info{min-width:0;flex:1}
+.nom-music-result-info strong{display:block;font-size:13px}
+.nom-music-result-actions{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+@media(min-width:700px){.nom-music-panel{left:auto;right:20px;width:400px}}
+.nom-share-types{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.nom-share-types button{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);color:var(--lime);border-radius:999px;padding:8px 12px;font-size:11px;font-weight:700;letter-spacing:.08em}.nom-share-types button:active{background:rgba(255,125,45,.2);border-color:var(--orange)}
+.nom-post-card{margin:14px 0;padding:16px;border:1px solid rgba(255,255,255,.09);border-radius:16px;background:rgba(255,255,255,.035)}
+.nom-post-card .post-author{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.nom-post-card .post-meta{font-size:.76rem;color:var(--lime);margin:8px 0}
+.nom-post-body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;margin:10px 0;color:#f4f4f4}
+.nom-post-media{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;object-position:center;border-radius:12px;margin:10px 0;background:#080808}
+.nom-post-audio{display:block;width:100%;margin:12px 0}
+.nom-post-actions{display:flex;justify-content:flex-end;margin-top:12px}.nom-post-delete{border:1px solid rgba(255,125,45,.45);background:rgba(255,125,45,.08);color:#ff9a5b;border-radius:999px;padding:8px 13px;font-size:12px;font-weight:700}.nom-post-delete:disabled{opacity:.55}
+</style>
 </head>
 
 <body>
@@ -257,7 +323,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   </div>
 
   <h2>Discover your next journey</h2>
-  <input class="search" id="homeSearch" placeholder="Search places, experiences..." oninput="searchPlaces(this.value)">
+  <input class="search" id="homeSearch" placeholder="Search places, members, community, work..." oninput="searchNOM(this.value,'home')"><div class="nom-universal-search hidden" id="homeUniversalSearch"><div class="nom-search-tabs" id="homeSearchTabs"></div><div id="homeSearchResults" aria-live="polite"><div class="nom-search-hint">Search across NOM.</div></div></div>
   <div class="categories">
     <button class="category active" onclick="filterPlaces('All',this)">All</button>
     <button class="category" onclick="filterPlaces('Nature',this)">Nature</button>
@@ -279,7 +345,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 <section id="explorePage" class="hidden">
   <div class="eyebrow">EXPLORE</div>
   <h1>Find your next destination.</h1>
-  <input class="search" id="exploreSearch" placeholder="Search places..." oninput="searchPlaces(this.value)">
+  <input class="search" id="exploreSearch" placeholder="Search places, members, community, work..." oninput="searchNOM(this.value,'explore')"><div class="nom-universal-search hidden" id="exploreUniversalSearch"><div class="nom-search-tabs" id="exploreSearchTabs"></div><div id="exploreSearchResults" aria-live="polite"><div class="nom-search-hint">Search across NOM.</div></div></div>
   <div class="categories">
     <button class="category active" onclick="filterPlaces('All',this)">All</button>
     <button class="category" onclick="filterPlaces('Nature',this)">Nature</button>
@@ -291,7 +357,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     <button class="secondary" id="importBaliButton" type="button" onclick="importBaliPlaces()">Save up to 100 Bali places to NOM</button>
   </div>
   <div style="display:flex;align-items:center;gap:9px;margin:8px 0 12px">
-    <button class="category active" id="photosOnlyButton" type="button" aria-pressed="true" onclick="togglePhotosOnly()">📷 Photos only: ON</button>
+    <button class="category" id="photosOnlyButton" type="button" aria-pressed="false" onclick="togglePhotosOnly()">📷 Photos only: OFF</button>
   </div>
   <div class="message" id="placesMessage"></div>
   <div class="cards" id="explorePlaces"></div>
@@ -301,20 +367,51 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 <section id="communityPage" class="hidden">
   <div class="eyebrow">NOM COMMUNITY</div><h1>Stories without borders.</h1>
   <p>Discover places shared by NOM members. Your discoveries can inspire someone's next journey.</p>
-  <div class="feed-card"><div class="eyebrow">SHARE WITH NOM</div><h3>Found somewhere special?</h3>
-    <p>Upload a place and your own photographs. Help the NOM community discover it.</p>
-    <button class="primary" type="button" onclick="showCommunityComposer()">＋ Share a place</button></div>
+  <div class="nom-share-card"><div class="eyebrow">YOUR NOM COMMUNITY</div><h3>What's happening on your journey?</h3>
+    <p>Share a moment, a story, a sound or somewhere worth discovering.</p>
+    <button class="primary" type="button" onclick="showNomShareComposer()">＋ Share to NOM</button>
+    <div class="nom-share-types" aria-label="Choose what to share"><button type="button" onclick="selectNomShareType('text')">TEXT</button><button type="button" onclick="selectNomShareType('image')">PHOTO</button><button type="button" onclick="selectNomShareType('video')">VIDEO</button><button type="button" onclick="selectNomShareType('audio')">AUDIO</button><button type="button" onclick="selectNomShareType('place')">PLACE</button></div>
+  </div>
+  <div class="nom-share-composer hidden" id="nomShareComposer">
+    <div class="eyebrow">SHARE TO NOM</div><h2 style="margin-top:7px">Create a post</h2>
+    <label for="nomShareBody">Your story</label>
+    <textarea id="nomShareBody" maxlength="3000" placeholder="Share what's on your mind..."></textarea>
+    <label for="nomShareCategory">Category</label>
+    <select id="nomShareCategory"><option>General</option><option>Travel</option><option>Food</option><option>Music</option><option>Work</option><option>Lifestyle</option></select>
+    <label for="nomSharePlace">Add a place (optional)</label>
+    <input id="nomSharePlace" maxlength="160" placeholder="Place name">
+    <input id="nomShareLocation" maxlength="200" placeholder="City, island or country">
+    <label for="nomShareMedia">Add photos, video or audio</label>
+    <input id="nomShareMedia" type="file" accept="image/*,video/*,.mp3,.m4a,.mp4,.aac,.wav,.wave,.caf,.aif,.aiff,.flac,.ogg,.oga,.opus,.amr,.3gp,.mid,.midi" multiple onchange="previewNomShareMedia()">
+    <div class="nom-share-preview" id="nomSharePreview"></div>
+    <p class="nom-share-hint">Up to 4 files · 50 MB per file. You choose what to share. Posts are published to the NOM community.</p>
+    <div class="nom-share-actions">
+      <button class="primary" id="nomSharePublish" type="button" onclick="handleNomPublishTap(event)">Publish post</button>
+      <button class="secondary" type="button" onclick="hideNomShareComposer()">Cancel</button>
+    </div>
+    <div class="message" id="nomShareMessage" aria-live="polite"></div>
+    <div class="work-progress hidden" id="nomShareProgress"><span id="nomShareProgressBar"></span></div>
+  </div>
   <div class="form-card community-upload hidden" id="communityComposer">
     <h2>Share a place</h2><p class="small">Upload up to 4 photos and/or videos (JPG, PNG, WebP, MP4, MOV or WebM · max 50 MB per file).</p>
     <label for="communityTitle">Place name</label><input id="communityTitle" maxlength="100" placeholder="e.g. A hidden beach in Bali">
     <label for="communityLocation">Location</label><input id="communityLocation" maxlength="160" placeholder="Town, island or country">
     <label for="communityCategory">Category</label><select id="communityCategory"><option>Nature</option><option>Food</option><option>Beach</option><option>Culture</option><option>Stay</option><option>Experience</option></select>
     <label for="communityDescription">Your story / description</label><textarea id="communityDescription" rows="4" maxlength="1200" placeholder="What makes this place worth discovering?"></textarea>
+    <button class="secondary" type="button" id="communityAiEnhance" onclick="enhanceCommunityDescription()">✨ Enhance with NOM AI</button>
+    <div class="message" id="communityAiMessage" aria-live="polite"></div>
+    <div class="feed-card hidden" id="communityAiPreview" style="margin:8px 0;padding:13px">
+      <div class="eyebrow">NOM AI SUGGESTION</div>
+      <p id="communityAiSuggestion" style="color:#eee;white-space:pre-wrap"></p>
+      <button class="primary" type="button" onclick="acceptCommunityAiSuggestion()">Use suggestion</button>
+      <button class="secondary" type="button" onclick="dismissCommunityAiSuggestion()">Keep my original</button>
+    </div>
     <label for="communityMedia">Photos and videos</label><input id="communityMedia" type="file" accept="image/*,video/*" multiple>
     <button class="primary" id="communitySubmit" type="button" onclick="submitCommunityPlace()">Submit place</button>
     <button class="secondary" type="button" onclick="hideCommunityComposer()">Cancel</button>
     <div class="message" id="communityMessage"></div><div class="work-progress hidden" id="communityUploadProgress"><span id="communityUploadProgressBar"></span></div><p class="small">Your place and photos appear publicly in Explore and Community as soon as you share them.</p>
   </div>
+  <h2>Latest from NOM</h2><div id="nomPostsFeed"><p class="small">Loading NOM posts...</p></div>
   <h2>Discoveries from the community</h2><div id="communityFeed"><p class="small">Loading community discoveries...</p></div>
   <h2>Your submissions</h2><div id="myCommunitySubmissions"><p class="small">Log in to see your submissions.</p></div>
   <div class="feed-card nom-work-entry" role="link" tabindex="0" aria-label="Open NOM Work" onclick="showPage('work')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showPage('work')}"><div class="eyebrow">NOM WORK</div><h3>Work. Travel. Live.</h3>
@@ -371,7 +468,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       <label>Profile picture (optional)</label>
       <div class="avatar-upload">
         <img id="avatarPreview" class="avatar-preview hidden" alt="Profile picture preview">
-        <input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Choose profile picture" onchange="handleRegistrationAvatar(this)">
+        <input id="avatarFile" type="file" accept="image/*" aria-label="Choose profile picture" onchange="handleRegistrationAvatar(this)">
         <p class="small">Choose a JPG, PNG or WebP image. NOM resizes it for your profile (max 2 MB after processing).</p>
       </div>
       <label>Display name</label>
@@ -412,6 +509,20 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 
 </main><div id="placeDetailOverlay" class="detail-overlay" role="dialog" aria-modal="true" aria-hidden="true" onclick="if(event.target===this)closePlaceDetail()"><div class="detail-topbar"><button class="detail-back" type="button" onclick="closePlaceDetail()" aria-label="Back to places">← <span>Back</span></button><span class="eyebrow">NOM DISCOVERY</span><button class="detail-close" type="button" onclick="closePlaceDetail()" aria-label="Close">×</button></div><div class="detail-body" id="placeDetailBody"></div></div><div id="workMediaLightbox" class="work-lightbox hidden" role="dialog" aria-modal="true" aria-label="Full-size portfolio media" onclick="if(event.target===this)closeWorkMediaViewer()"><button class="work-lightbox-close" type="button" onclick="closeWorkMediaViewer()" aria-label="Close">×</button><div id="workMediaLightboxContent"></div></div><section id="nomChatOverlay" class="nom-chat-overlay hidden" role="dialog" aria-modal="true" aria-label="NOM private chat"><div class="nom-chat-top"><div class="nom-chat-identity"><span id="nomChatAvatar"></span><div><strong id="nomChatTitle">NOM messages</strong><div class="small" id="nomChatSubtitle">Private member conversation</div></div></div><button class="text-button" type="button" onclick="closeNomChat()">Close</button></div><div class="nom-chat-messages" id="nomChatMessages"></div><form class="nom-chat-compose" onsubmit="event.preventDefault();sendNomMessage()"><textarea id="nomChatInput" maxlength="4000" placeholder="Write a message..." required></textarea><button class="primary" id="nomChatSend" type="submit">Send</button></form></section>
 
+<div id="nomMusicPanel" class="nom-music-panel closed" aria-label="NOM music player">
+ <div class="nom-music-head"><strong>NOM MUSIC</strong><button type="button" id="nomMusicExpand" aria-label="Close music" onclick="toggleNomMusicPanel()">×</button></div>
+ <div id="nomMusicMessage" class="small" style="margin-top:7px">Play Spotify inside NOM. Paste a Spotify track, album or playlist link below.</div>
+ <div class="nom-music-expanded">
+  <form onsubmit="event.preventDefault();loadNomSpotifyLink()"><input id="nomSpotifyLink" type="url" maxlength="500" placeholder="Paste Spotify link here..." aria-label="Spotify link"><button class="primary" type="submit">Play Spotify</button></form>
+  <div id="nomSpotifyEmbed"></div>
+  <hr>
+  <div class="small">Or discover Apple Music previews</div>
+  <form onsubmit="event.preventDefault();searchNomMusic()"><input id="nomMusicSearch" type="search" maxlength="120" placeholder="Search songs or artists..." aria-label="Search Apple Music"><button class="primary" type="submit">Search Apple</button></form>
+  <div id="nomMusicResults" aria-live="polite"></div>
+  <audio id="nomMusicAudio" controls preload="none" playsinline style="width:100%;margin-top:10px;display:none"></audio>
+ </div>
+</div>
+<button id="nomMusicToggle" class="nom-music-toggle" type="button" aria-label="Open music" title="Music" onclick="toggleNomMusicPanel()">♫</button>
 <nav class="bottom-nav">
   <button class="nav-item active" data-page="home" onclick="showPage('home')"><span>⌂</span>Home</button>
   <button class="nav-item" data-page="explore" onclick="showPage('explore')"><span>⌕</span>Explore</button>
@@ -421,18 +532,34 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 </nav>
 
 <script>
+/* Music state is initialized before any startup code can access it. */
+var nomMusicResults=[];
+var nomMusicAudio=null;
+
 /* NOM SUPABASE CONNECTION */
+/* Share constants must initialize before any startup callbacks can run. */
+const NOM_COMMUNITY_BUCKET="nom-community-media";
+window.NOM_COMMUNITY_MAX_FILE=50*1024*1024;
+
 const SUPABASE_URL = "https://ojzzroswtzjnnoigjpuc.supabase.co";
 const SUPABASE_KEY = "sb_publishable_xc8mdZ1eb8XtEyxtn3tfXg_DnqNNfjI";
 
 const supabaseClient = window.supabase?.createClient
-  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storage: window.localStorage,
+        storageKey: "nom-lifestyle-auth"
+      }
+    })
   : null;
 
 let currentUser = null;
 let authMode = "signup";
 let selectedCategory = "All";
-let photosOnly = true;
+let photosOnly = false;
 
 /* PLACES — loaded from the Supabase catalogue */
 let places = [];
@@ -441,6 +568,9 @@ let currentResults = [];
 let searchRequestId = 0;
 
 let savedIds = JSON.parse(localStorage.getItem("nomSaved") || "[]");
+let savedPlaceRecords = [];
+let savedPlacesLoadedUser = null;
+let savedPlacesLoadingUser = null;
 let trips = JSON.parse(localStorage.getItem("nomTrips") || "[]");
 
 /* NAVIGATION */
@@ -513,17 +643,19 @@ async function openMemberPortfolio(userId){
   if(mediaError){target.innerHTML='<p class="small">Could not load this member’s media.</p>';return;}
   const items=(media||[]).map(x=>{
     const url=supabaseClient.storage.from(WORK_MEDIA_BUCKET).getPublicUrl(x.object_path).data.publicUrl;
-    const player=x.media_type==="photo"?'<img class="work-expandable" src="'+escapeHTML(url)+'" alt="Portfolio photo" loading="lazy" onclick="openWorkMediaViewer(\'photo\',this.src)">':x.media_type==="video"?'<video class="work-expandable" controls playsinline preload="metadata" src="'+escapeHTML(url)+'" onclick="openWorkMediaViewer(\'video\',this.currentSrc||this.src)"></video>':'<audio controls preload="metadata" src="'+escapeHTML(url)+'"></audio>';
-    return '<article class="work-media-card">'+player+(x.caption?'<p>'+escapeHTML(x.caption)+'</p>':'')+'</article>';
+    const caption=x.caption?'<span class="work-public-tile-caption">'+escapeHTML(x.caption)+'</span>':'';
+    if(x.media_type==="photo")return '<button class="work-public-tile" type="button" aria-label="Open portfolio photo" onclick="openWorkMediaViewer(\'photo\',\''+escapeHTML(url)+'\')"><img src="'+escapeHTML(url)+'" alt="Portfolio photo" loading="lazy">'+caption+'</button>';
+    if(x.media_type==="video")return '<button class="work-public-tile video" type="button" aria-label="Play portfolio video fullscreen" onclick="openWorkMediaViewer(\'video\',\''+escapeHTML(url)+'\')"><video muted playsinline preload="auto" onloadeddata="if(this.currentTime===0)this.currentTime=0.1" onseeked="this.pause()" src="'+escapeHTML(url)+'"></video>'+caption+'</button>';
+    return '<button class="work-public-tile audio" type="button" aria-label="Play portfolio audio" onclick="openWorkMediaViewer(\'audio\',\''+escapeHTML(url)+'\')"><span class="audio-symbol">♫</span><span>Audio</span>'+caption+'</button>';
   }).join("");
   const username=p.username||"nom-member";
-  target.innerHTML='<div class="work-member-identity"><span class="nom-identity-row">'+nomAvatarMarkup(avatarData?.avatar_url,username)+'<span>@'+escapeHTML(username)+'</span></span></div><div class="small work-role">'+escapeHTML(p.headline||"NOM member")+'</div><h2>'+escapeHTML(p.display_name||username)+'</h2><p class="small">'+escapeHTML(p.location||"")+'</p><p>'+escapeHTML(p.bio||"")+'</p><h3>Portfolio</h3>'+(items||'<p class="small">This member has not uploaded portfolio media yet.</p>');
+  target.innerHTML='<div class="work-member-identity"><span class="nom-identity-row">'+nomAvatarMarkup(avatarData?.avatar_url,username)+'<span>@'+escapeHTML(username)+'</span></span></div><div class="small work-role">'+escapeHTML(p.headline||"NOM member")+'</div><h2>'+escapeHTML(p.display_name||username)+'</h2><p class="small">'+escapeHTML(p.location||"")+'</p><p>'+escapeHTML(p.bio||"")+'</p><h3>Portfolio</h3>'+(items?'<div class="work-public-grid">'+items+'</div>':'<p class="small">This member has not uploaded portfolio media yet.</p>');
 }
 
 let activeNomConversation=null,nomChatChannel=null,nomNotificationChannel=null;
 function openWorkMediaViewer(kind,url){
  const box=document.getElementById("workMediaLightbox"),target=document.getElementById("workMediaLightboxContent");if(!box||!url)return;
- target.innerHTML=kind==="video"?'<video controls playsinline autoplay src="'+escapeHTML(url)+'"></video>':'<img src="'+escapeHTML(url)+'" alt="Full-size portfolio media">';
+ target.innerHTML=kind==="video"?'<video controls playsinline autoplay src="'+escapeHTML(url)+'"></video>':kind==="audio"?'<div style="width:min(520px,90vw);padding:24px;background:#1b1b1b;border:1px solid #444;border-radius:16px;text-align:center;color:#f5f5f5"><div style="font-size:42px;color:var(--lime)">♫</div><p>Portfolio audio</p><audio controls autoplay src="'+escapeHTML(url)+'" style="width:100%"></audio></div>':'<img src="'+escapeHTML(url)+'" alt="Full-size portfolio media">';
  box.classList.remove("hidden");document.body.style.overflow="hidden";
 }
 function closeWorkMediaViewer(){
@@ -658,9 +790,13 @@ function openPlaceDetail(id){
  const photos=(item.photos||[]).filter(Boolean),videos=(item.videos||[]).filter(Boolean);
  const gallery=photos.length||videos.length?'<div class="detail-gallery">'+photos.map(url=>'<img src="'+escapeHTML(url)+'" alt="'+escapeHTML(item.name)+'" loading="lazy">').join('')+videos.map(url=>'<video controls playsinline preload="metadata" src="'+escapeHTML(url)+'"></video>').join('')+'</div>':'';
  const rating=item.rating?'★ '+item.rating:'';
- const save=item.kind==='place'?'<button class="primary" data-place-id="'+escapeHTML(String(item.id))+'" onclick="toggleSave(this.dataset.placeId);closePlaceDetail()">♡ Save this place</button>':'';
+ const isSaved=savedIds.map(String).includes(String(item.id));
+ const save=item.kind==='place'?'<button class="primary" data-place-id="'+escapeHTML(String(item.id))+'" onclick="savePlaceFromDetail(this.dataset.placeId)">'+(isSaved?'♥ Saved — remove':'♡ Save this place')+'</button>':'';
+ const destination=[item.name,item.address||item.location].filter(Boolean).join(', ');
+ const encodedDestination=encodeURIComponent(destination);
+ const directions=item.kind==='place'&&destination?'<div class="detail-directions"><a class="maps-link" href="https://www.google.com/maps/dir/?api=1&destination='+encodedDestination+'&travelmode=driving" target="_blank" rel="noopener noreferrer">↗ Google Maps directions</a><a class="waze-link" href="https://waze.com/ul?q='+encodedDestination+'&navigate=yes" target="_blank" rel="noopener noreferrer">↗ Waze directions</a></div>':'';
  const credit=item.attribution?'<p class="detail-credit">Photo: '+escapeHTML(item.attribution)+' · '+escapeHTML(item.license||'Licence details unavailable')+'</p>':'';
- document.getElementById('placeDetailBody').innerHTML=gallery+'<div class="detail-copy"><div class="eyebrow">'+escapeHTML((item.category||'DISCOVERY').toUpperCase())+(rating?' · '+escapeHTML(rating):'')+'</div><h1>'+escapeHTML(item.name)+'</h1><div class="detail-location">'+escapeHTML(item.location||'')+(item.price?' · '+escapeHTML(item.price):'')+'</div><p class="detail-description">'+escapeHTML(item.description||'')+'</p>'+(item.author?'<p class="small">Shared by '+escapeHTML(item.author)+'</p>':'')+save+credit+'</div>';
+ document.getElementById('placeDetailBody').innerHTML=gallery+'<div class="detail-copy"><div class="eyebrow">'+escapeHTML((item.category||'DISCOVERY').toUpperCase())+(rating?' · '+escapeHTML(rating):'')+'</div><h1>'+escapeHTML(item.name)+'</h1><div class="detail-location">'+escapeHTML(item.location||'')+(item.price?' · '+escapeHTML(item.price):'')+'</div><p class="detail-description">'+escapeHTML(item.description||'')+'</p>'+directions+(item.author?'<p class="small">Shared by '+escapeHTML(item.author)+'</p>':'')+save+credit+'</div>';
  const overlay=document.getElementById('placeDetailOverlay');
  if(!detailHistoryOpen){
    history.pushState({...history.state,nomPlaceDetail:true},'',location.pathname+location.search+'#place-detail');
@@ -686,8 +822,8 @@ window.addEventListener('popstate',()=>{
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closePlaceDetail();});
 
 function placeCard(place){
-  const isSaved = savedIds.includes(place.id);
-  nomDetailItems[String(place.id)]={id:place.id,kind:'place',name:place.name,description:place.description,location:place.location,category:place.category,price:place.price,rating:place.rating,photos:[place.image_url||place.image].filter(Boolean),videos:place.video_urls||[],author:place.community_author,attribution:place.image_attribution,license:place.image_license};
+  const isSaved = savedIds.map(String).includes(String(place.id));
+  nomDetailItems[String(place.id)]={id:place.id,kind:'place',name:place.name,description:place.description,location:place.location,address:place.address,category:place.category,price:place.price,rating:place.rating,photos:[place.image_url||place.image].filter(Boolean),videos:place.video_urls||[],author:place.community_author,attribution:place.image_attribution,license:place.image_license};
   const image = place.image_url || place.image || "";
   const rating = place.rating ? "★ " + place.rating : "";
   const photoCredit = place.image_attribution
@@ -711,9 +847,6 @@ function placeCard(place){
         <h3>${escapeHTML(place.name)}</h3>
         <p>${escapeHTML(place.description)}</p>
         <p class="small">${escapeHTML(place.location)} · ${escapeHTML(place.price || "")}</p>
-        <button class="save-button" onclick='event.stopPropagation();toggleSave("${escapeHTML(String(place.id))}")'>
-          ${isSaved ? "♥ Saved" : "♡ Save place"}
-        </button>
       </div>
     </article>
   `;
@@ -786,7 +919,7 @@ async function loadNomPlaces(query,category){
     try{
       const {data,error}=await supabaseClient.rpc("search_places",{
         search_text:query,
-        category_filter:category
+        category_filter:(!category || category==="All") ? null : category
       });
       if(!error && Array.isArray(data) && data.length)return data;
       if(error)console.warn("NOM RPC search unavailable; using direct catalogue fallback:",error.message);
@@ -859,7 +992,9 @@ async function searchPlaces(query){
       : "Loading live discoveries...";
 
     try{
-      const url = SUPABASE_URL + "/functions/v1/nom-place-search?q=" + encodeURIComponent(value) + "&category=" + encodeURIComponent(selectedCategory) + "&limit=30";
+      const liveParams = new URLSearchParams({q:value,limit:"30"});
+      if(categoryAtRequest && categoryAtRequest!=="All")liveParams.set("category",categoryAtRequest);
+      const url = SUPABASE_URL + "/functions/v1/nom-place-search?" + liveParams.toString();
       const response = await fetch(url,{headers:{apikey:SUPABASE_KEY}});
       if(!response.ok) throw new Error("External place search unavailable");
       const payload = await response.json();
@@ -881,6 +1016,93 @@ async function searchPlaces(query){
       }
     }
   },350);
+}
+
+
+/* NOM UNIVERSAL SEARCH — Places, Members, Community and Work */
+let nomSearchTimer=null,nomSearchRequestId=0,nomSearchCategory="all",nomSearchSource="home";
+let nomSearchData={places:[],members:[],community:[],work:[]};
+let nomSearchExternalMessage="";
+function setNomSearchCategory(category){nomSearchCategory=category;renderNOMSearchResults();}
+function nomSearchSafeTerm(value){return String(value||"").trim().replace(/[%,()\\\\'"]/g," ").replace(/\\s+/g," ").slice(0,80);}
+function nomSearchTabsMarkup(){
+ const counts={all:nomSearchData.places.length+nomSearchData.members.length+nomSearchData.community.length+nomSearchData.work.length,places:nomSearchData.places.length,members:nomSearchData.members.length,community:nomSearchData.community.length,work:nomSearchData.work.length};
+ return [["all","All"],["places","Places"],["members","Members"],["community","Community"],["work","Work"]].map(([key,label])=>'<button type="button" class="nom-search-tab '+(nomSearchCategory===key?"active":"")+'" onclick="setNomSearchCategory(\''+key+'\')">'+label+' · '+counts[key]+'</button>').join("");
+}
+function nomSearchResultRow(kind,title,subtitle,image,action,saveId){
+ const safeImage=typeof image==="string"&&image.startsWith("https://")?image:"";
+ const fallback=kind.toLowerCase().includes("place")?"🍽️":"👤";
+ const thumb=safeImage?'<img class="nom-search-thumb" src="'+escapeHTML(safeImage)+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><span class="nom-search-thumb nom-search-placeholder" aria-hidden="true" style="display:none">'+fallback+'</span>':'<span class="nom-search-thumb nom-search-placeholder" aria-hidden="true">'+fallback+'</span>';
+ return '<div class="nom-search-result" '+(action?'onclick="'+action+'" role="button" tabindex="0"':'')+'>'+thumb+'<div class="nom-search-result-copy"><div class="nom-search-kind">'+escapeHTML(kind)+'</div><strong>'+escapeHTML(title||"NOM result")+'</strong><small>'+escapeHTML(subtitle||"")+'</small></div></div>';
+}
+function renderNOMSearchResults(){
+ const source=nomSearchSource,tab=document.getElementById(source+"SearchTabs"),target=document.getElementById(source+"SearchResults");
+ if(!tab||!target)return;
+ tab.innerHTML=nomSearchTabsMarkup();
+ const groups=[
+  {key:"places",label:"Places",items:nomSearchData.places,render:p=>{const id=String(p.id??p.source_id??"").replace(/[^a-zA-Z0-9_-]/g,"");nomDetailItems[id]={id:p.id??p.source_id,kind:"place",name:p.name,description:p.description,location:p.location,category:p.category,price:p.price,rating:p.rating,photos:[p.image_url||p.image].filter(Boolean),videos:p.video_urls||[],attribution:p.image_attribution,license:p.image_license};return nomSearchResultRow(p.source?"External place · OSM":"NOM place",p.name,(p.location||"")+(p.category?" · "+p.category:""),p.image_url||p.image,'openPlaceDetail(\''+escapeHTML(id)+'\')',p.id??p.source_id);}},
+  {key:"members",label:"Members",items:nomSearchData.members,render:p=>nomSearchResultRow("NOM member",p.display_name||p.username||"NOM member","@"+(p.username||"member")+(p.headline?" · "+p.headline:"")+(p.location?" · "+p.location:""),p.avatar_url,p.has_work_profile?'openMemberPortfolio(\''+escapeHTML(p.id)+'\')':'showPage(\'work\')')},
+  {key:"community",label:"Community",items:nomSearchData.community,render:p=>nomSearchResultRow("Community",p.title,(p.location||"")+(p.category?" · "+p.category:""),(p.photo_urls||[])[0]||"",'showPage(\'community\')')},
+  {key:"work",label:"Work",items:nomSearchData.work,render:p=>nomSearchResultRow((p.listing_type||"opportunity").replace(/_/g," "),p.title,(p.location||"Remote")+(p.work_mode?" · "+p.work_mode:"")+(p.compensation?" · "+p.compensation:""),"",'showPage(\'work\')')}
+ ];
+ const selected=nomSearchCategory==="all"?groups:groups.filter(g=>g.key===nomSearchCategory);
+ target.innerHTML=selected.map(g=>'<section class="nom-search-group"><h3>'+g.label+' <span>'+g.items.length+' found</span></h3>'+(g.items.length?g.items.slice(0,6).map(g.render).join(""):'<div class="nom-search-empty">No matching '+g.label.toLowerCase()+' yet.</div>')+'</section>').join("")||'<div class="nom-search-empty">No results found. Try another search.</div>';
+}
+function setNOMSearchView(source,active){
+ ["home","explore"].forEach(page=>{
+  const section=document.getElementById(page+"Page"),panel=document.getElementById(page+"UniversalSearch");
+  if(!section||!panel)return;
+  panel.classList.toggle("hidden",!(active&&page===source));
+  section.querySelectorAll(".categories").forEach(el=>el.style.display=active&&page===source?"none":"");
+  const cards=document.getElementById(page+"Places");if(cards)cards.style.display=active&&page===source?"none":"";
+  if(page==="explore")["importBaliButton","photosOnlyButton","placesMessage"].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=active&&page===source?"none":"";});
+ });
+}
+async function searchNOM(query,source){
+ nomSearchSource=source==="explore"?"explore":"home";
+ const value=nomSearchSafeTerm(query);clearTimeout(nomSearchTimer);const requestId=++nomSearchRequestId;
+ if(!value){setNOMSearchView(nomSearchSource,false);nomSearchData={places:[],members:[],community:[],work:[]};searchPlaces("");return;}
+ setNOMSearchView(nomSearchSource,true);
+ nomSearchData={places:[],members:[],community:[],work:[]};
+ const resultTarget=document.getElementById(nomSearchSource+"SearchResults"),tabsTarget=document.getElementById(nomSearchSource+"SearchTabs");
+ if(tabsTarget)tabsTarget.innerHTML=nomSearchTabsMarkup();
+ if(resultTarget)resultTarget.innerHTML=value.length<2?'<div class="nom-search-hint">Type at least 2 characters to search NOM.</div>':'<div class="nom-search-loading">Searching NOM...</div>';
+ if(value.length<2)return;
+ nomSearchTimer=setTimeout(async()=>{
+  if(!supabaseClient){if(resultTarget)resultTarget.innerHTML='<div class="nom-search-empty">NOM search is temporarily unavailable.</div>';return;}
+  const pattern="%"+value+"%";
+  const communityPromise=supabaseClient.from("community_posts").select("id,title,description,location,category,photo_urls,video_urls,user_id,username,display_name").eq("status","published").or("title.ilike."+pattern+",description.ilike."+pattern+",location.ilike."+pattern).order("created_at",{ascending:false}).limit(12);
+  const placesPromise=loadNomPlaces(value,"All").catch(()=>[]);
+  const externalPromise=fetch(SUPABASE_URL+"/functions/v1/nom-place-search-v2?q="+encodeURIComponent(value)+"&limit=12",{headers:{apikey:SUPABASE_KEY}}).then(async r=>{const data=await r.json().catch(()=>({}));return r.ok&&!data.error?{ok:true,data}:{ok:false,error:data.error||"External places search is temporarily unavailable."};}).catch(()=>({ok:false,error:"Could not connect to external places search."}));
+  const [places,external,community]=await Promise.all([placesPromise,externalPromise,communityPromise]);
+  nomSearchExternalMessage=external.ok?"External places checked · Geoapify / OpenStreetMap":(external.error||"External places search is unavailable right now.");
+  if(requestId!==nomSearchRequestId)return;
+  const mergedPlaces=new Map();
+  [...(Array.isArray(external?.data?.places)?external.data.places:[]),...(Array.isArray(places)?places:[])].forEach(p=>mergedPlaces.set(String(p.source_id||p.id),{...p,id:p.id??p.source_id}));
+  let members=[],work=[];
+  if(currentUser){
+   const [profilesResult,workProfilesResult,workResult]=await Promise.all([
+    supabaseClient.from("profiles").select("id,username,display_name,avatar_url").or("username.ilike."+pattern+",display_name.ilike."+pattern).limit(15),
+    supabaseClient.from("work_profiles").select("user_id,headline,bio,location,display_name,username").or("headline.ilike."+pattern+",bio.ilike."+pattern+",location.ilike."+pattern+",display_name.ilike."+pattern+",username.ilike."+pattern).limit(15),
+    supabaseClient.from("work_listings").select("id,listing_type,title,description,location,work_mode,category,compensation,member_name,member_username").eq("status","published").or("title.ilike."+pattern+",description.ilike."+pattern+",location.ilike."+pattern+",category.ilike."+pattern).order("created_at",{ascending:false}).limit(15)
+   ]);
+   if(requestId!==nomSearchRequestId)return;
+   const profileRows=profilesResult.data||[],workRows=workProfilesResult.data||[],profileMap=new Map(profileRows.map(p=>[p.id,p]));
+   const missingIds=workRows.map(p=>p.user_id).filter(id=>!profileMap.has(id));
+   let extraProfiles=[];
+   if(missingIds.length){const extra=await supabaseClient.from("profiles").select("id,username,display_name,avatar_url").in("id",missingIds);extraProfiles=extra.data||[];}
+   const allProfiles=[...profileRows,...extraProfiles],allMap=new Map(allProfiles.map(p=>[p.id,p])),workMap=new Map(workRows.map(p=>[p.user_id,p]));
+   const memberIds=new Set([...allProfiles.map(p=>p.id),...workRows.map(p=>p.user_id)]);
+   members=[...memberIds].map(id=>{const p=allMap.get(id)||{},w=workMap.get(id)||{};return{id,username:p.username||w.username||"",display_name:p.display_name||w.display_name||"",avatar_url:p.avatar_url||"",headline:w.headline||"",location:w.location||"",has_work_profile:workMap.has(id)};});
+   work=workResult.data||[];
+  }
+  nomSearchData={places:[...mergedPlaces.values()],members,community:community.data||[],work};
+  renderNOMSearchResults();
+  const empty=Object.values(nomSearchData).every(list=>!list.length);
+  if(empty&&resultTarget)resultTarget.innerHTML='<div class="nom-search-empty">No matches found. Try a different keyword.</div>';
+  if(resultTarget&&nomSearchExternalMessage)resultTarget.innerHTML+='<div class="nom-search-hint">'+escapeHTML(nomSearchExternalMessage)+'</div>';
+  if(!currentUser&&resultTarget)resultTarget.innerHTML+='<div class="nom-search-hint">Log in to search NOM members and work opportunities. Places and community discoveries are available without signing in.</div>';
+ },260);
 }
 
 async function importBaliPlaces(){
@@ -927,7 +1149,158 @@ async function importBaliPlaces(){
 }
 
 
-async function showCommunityComposer(){
+async 
+/* UNIVERSAL SHARE TO NOM — writes to the new nom_posts system */
+function selectNomShareType(type){
+  if(!currentUser){showPage("profile");showAuth("signup");return;}
+  const composer=document.getElementById("nomShareComposer");
+  composer.classList.remove("hidden");
+  document.getElementById("nomShareMessage").textContent="";
+  const body=document.getElementById("nomShareBody");
+  const place=document.getElementById("nomSharePlace");
+  const media=document.getElementById("nomShareMedia");
+  const accepts={image:"image/*",video:"video/*",audio:".mp3,.m4a,.mp4,.aac,.wav,.wave,.caf,.aif,.aiff,.flac,.ogg,.oga,.opus,.amr,.3gp,.mid,.midi,audio/*"};
+  media.accept=accepts[type]||"image/*,video/*,.mp3,.m4a,.mp4,.aac,.wav,.wave,.caf,.aif,.aiff,.flac,.ogg,.oga,.opus,.amr,.3gp,.mid,.midi";
+  const mediaLabel=document.querySelector('label[for="nomShareMedia"]');
+  if(mediaLabel)mediaLabel.textContent=type==="audio"?"Choose an audio file":type==="image"?"Choose photos":type==="video"?"Choose a video":"Add photos, video or audio";
+  composer.scrollIntoView({behavior:"smooth",block:"start"});
+  if(type==="text"){body.focus();return;}
+  if(type==="place"){place.focus();return;}
+  // On iPhone, let the member tap the visible native file input.
+  // Avoid a scripted input.click(), which Safari may silently block.
+  media.scrollIntoView({behavior:"smooth",block:"center"});
+}
+function showNomShareComposer(){
+  if(!currentUser){showPage("profile");showAuth("signup");return;}
+  const composer=document.getElementById("nomShareComposer");
+  composer.classList.remove("hidden");
+  document.getElementById("nomShareMessage").textContent="";
+  composer.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function hideNomShareComposer(){
+  document.getElementById("nomShareComposer").classList.add("hidden");
+}
+function getNomShareFileInfo(file){
+  const ext=(file.name.split(".").pop()||"").toLowerCase();
+  const mime=(file.type||"").toLowerCase();
+  const types={
+    jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png",webp:"image/webp",heic:"image/heic",heif:"image/heif",
+    mp4:"video/mp4",webm:"video/webm",mov:"video/quicktime",m4v:"video/x-m4v",
+    mp3:"audio/mpeg",m4a:"audio/mp4",aac:"audio/aac",wav:"audio/wav",ogg:"audio/ogg",oga:"audio/ogg",webm:"audio/webm",
+    caf:"audio/x-caf",aif:"audio/aiff",aiff:"audio/aiff",flac:"audio/flac",opus:"audio/opus",amr:"audio/amr","3gp":"audio/3gpp",mid:"audio/midi",midi:"audio/midi"
+  };
+  const allowed=new Set(["image/jpeg","image/png","image/webp","image/heic","image/heif","video/mp4","video/webm","video/quicktime","video/x-m4v","audio/mpeg","audio/mp4","audio/aac","audio/wav","audio/x-wav","audio/ogg","audio/webm","audio/x-caf","audio/aiff","audio/flac","audio/opus","audio/amr","audio/3gpp","audio/midi"]);
+  const contentType=types[ext]||(allowed.has(mime)?mime:(mime.startsWith("audio/")&&allowed.has(mime)?mime:""));
+  const mediaType=contentType.startsWith("image/")?"image":contentType.startsWith("video/")?"video":contentType.startsWith("audio/")?"audio":"";
+  return {contentType,mediaType,supported:allowed.has(contentType)&&!!mediaType};
+}
+function previewNomShareMedia(){
+  const files=Array.from(document.getElementById("nomShareMedia").files||[]);
+  const preview=document.getElementById("nomSharePreview");
+  preview.innerHTML="";
+  files.slice(0,4).forEach(file=>{
+    const info=getNomShareFileInfo(file),url=URL.createObjectURL(file);
+    let node;
+    if(info.mediaType==="image"){node=document.createElement("img");node.alt=file.name;node.src=url;}
+    else if(info.mediaType==="video"){node=document.createElement("video");node.src=url;node.muted=true;node.playsInline=true;}
+    else if(info.mediaType==="audio"){node=document.createElement("audio");node.src=url;node.controls=true;}
+    else{node=document.createElement("div");node.textContent=file.name;}
+    preview.appendChild(node);
+  });
+}
+async function publishNomPost(){
+  const message=document.getElementById("nomShareMessage"),button=document.getElementById("nomSharePublish"),body=document.getElementById("nomShareBody").value.trim(),placeName=document.getElementById("nomSharePlace").value.trim(),placeLocation=document.getElementById("nomShareLocation").value.trim(),category=document.getElementById("nomShareCategory").value,files=Array.from(document.getElementById("nomShareMedia").files||[]);
+  if(!currentUser){message.textContent="Please log in to share with NOM.";return;}
+  if(!body&&!placeName&&!files.length){message.textContent="Add a story, a place or some media before publishing.";return;}
+  if(body.length>3000){message.textContent="Your post is too long. Please keep it under 3,000 characters.";return;}
+  if(files.length>4){message.textContent="Please choose up to 4 files.";return;}
+  const infos=files.map(getNomShareFileInfo);
+  const invalid=files.find((file,index)=>!file.size||file.size>window.NOM_COMMUNITY_MAX_FILE||!infos[index].supported);
+  if(invalid){message.textContent=invalid.size>NOM_COMMUNITY_MAX_FILE?invalid.name+" exceeds NOM's 50 MB limit.":"Please choose a supported photo, video or audio file. iPhone HEIC/HEIF photos are supported.";return;}
+  if(!supabaseClient){message.textContent="NOM is temporarily unavailable. Please try again.";return;}
+  const progress=document.getElementById("nomShareProgress"),bar=document.getElementById("nomShareProgressBar");
+  const uploaded=[];button.disabled=true;button.textContent="Publishing...";progress.classList.remove("hidden");bar.style.width="0%";message.textContent="Preparing your post...";
+  let createdPostId=null,uploadStage="checking your login";
+  try{
+    const {data:sessionData,error:sessionError}=await supabaseClient.auth.getSession();
+    if(sessionError)throw sessionError;
+    const session=sessionData?.session;
+    if(!session)throw new Error("Your session has expired. Please log in again.");
+    uploadStage="creating your post";
+    let postType="text";
+    const mediaTypes=new Set(infos.map(info=>info.mediaType));
+    if(mediaTypes.size>1||(body&&mediaTypes.size>0))postType="mixed";
+    else if(mediaTypes.size===1){const onlyType=Array.from(mediaTypes)[0];postType=onlyType==="image"?"photo":onlyType;}
+    const insertPayload={user_id:currentUser.id,body:body||(files.length?"Shared a moment on NOM.":null),post_type:postType,place_name:placeName||null,place_location:placeLocation||null,category,status:"published"};
+    const {data:post,error:postError}=await supabaseClient.from("nom_posts").insert(insertPayload).select("id").single();
+    if(postError)throw postError;
+    createdPostId=post.id;
+    const attachments=[];
+    for(let i=0;i<files.length;i++){
+      const file=files[i],info=infos[i],ext=(file.name.split(".").pop()||"file").toLowerCase().replace(/[^a-z0-9]/g,"")||"bin",path=currentUser.id+"/"+crypto.randomUUID()+"."+ext;
+      uploadStage="uploading "+info.mediaType+" file "+(i+1)+" of "+files.length;
+      message.textContent="Uploading "+info.mediaType+" "+(i+1)+" of "+files.length+"...";
+      if(file.size>6*1024*1024){
+        await uploadNomResumable(file,path,session,NOM_COMMUNITY_BUCKET,pct=>{bar.style.width=pct+"%";message.textContent="Uploading media "+(i+1)+" of "+files.length+" · "+pct+"%";},info.contentType);
+      }else{
+        const {error:uploadError}=await supabaseClient.storage.from(NOM_COMMUNITY_BUCKET).upload(path,file,{cacheControl:"3600",upsert:false,contentType:info.contentType});
+        if(uploadError)throw uploadError;
+      }
+      uploaded.push(path);
+      attachments.push({post_id:createdPostId,user_id:currentUser.id,storage_path:path,media_type:info.mediaType,mime_type:info.contentType});
+      bar.style.width=Math.round(((i+1)/Math.max(files.length,1))*100)+"%";
+    }
+    if(attachments.length){
+      uploadStage="saving the media attachment";
+      const {error:mediaError}=await supabaseClient.from("nom_post_media").insert(attachments);
+      if(mediaError)throw mediaError;
+    }
+    document.getElementById("nomShareBody").value="";
+    document.getElementById("nomSharePlace").value="";
+    document.getElementById("nomShareLocation").value="";
+    document.getElementById("nomShareMedia").value="";
+    document.getElementById("nomSharePreview").innerHTML="";
+    message.textContent="Your post is published. Welcome to the next chapter of NOM.";
+    bar.style.width="100%";
+    await loadNomPostsFeed();
+  }catch(error){
+    console.error("NOM post publishing:",error);
+    if(createdPostId)await supabaseClient.from("nom_posts").delete().eq("id",createdPostId);
+    if(uploaded.length)await supabaseClient.storage.from(NOM_COMMUNITY_BUCKET).remove(uploaded);
+    const detail=[error?.message,error?.code?"Code: "+error.code:"",error?.details,error?.hint].filter(Boolean).join(" · ");
+    message.textContent="Failed while "+uploadStage+": "+(detail||"Unknown upload error. Please try again.");
+    progress.classList.add("hidden");bar.style.width="0%";
+  }finally{
+    button.disabled=false;button.textContent="Publish post";
+  }
+}
+
+// One publish entry point with synchronous entry diagnostics.
+function handleNomPublishTap(event){
+  if(event)event.preventDefault();
+  const button=document.getElementById("nomSharePublish");
+  const status=document.getElementById("nomShareMessage");
+  if(!button||button.disabled)return;
+  button.disabled=true;
+  button.textContent="Checking...";
+  if(status)status.textContent="Publish tap received. Checking your post...";
+  try{
+    const task=publishNomPost();
+    if(task&&typeof task.then==="function")task.catch(error=>{
+      console.error("NOM publish handler:",error);
+      if(status)status.textContent="Publish stopped: "+(error?.message||String(error));
+      button.disabled=false;
+      button.textContent="Publish post";
+    });
+  }catch(error){
+    console.error("NOM publish handler:",error);
+    if(status)status.textContent="Publish could not start: "+(error?.message||String(error));
+    button.disabled=false;
+    button.textContent="Publish post";
+  }
+}
+
+function showCommunityComposer(){
   if(!currentUser){showPage("profile");showAuth("signup");return;}
   document.getElementById("communityComposer").classList.remove("hidden");
   document.getElementById("communityMessage").textContent="";
@@ -938,8 +1311,8 @@ function communityPostCard(post,own=false){
   nomDetailItems[String(post.id)]={id:post.id,kind:"community",name:post.title,description:post.description,location:post.location,category:post.category,photos,videos,author:post.username?"@"+post.username:(post.display_name||"NOM member")};
   const status="Published on NOM";
   const authorIdentity='<span class="nom-identity-row">'+nomAvatarMarkup(post.avatar_url,post.username||"NOM member",true)+'<span>'+escapeHTML(post.username?"@"+post.username:(post.display_name||"NOM member"))+'</span></span>';
-  const photoPreviews=photos.map(url=>'<img src="'+escapeHTML(url)+'" alt="'+escapeHTML(post.title)+'" loading="lazy">').join("");
-  const videoPreviews=videos.map(url=>'<video controls playsinline preload="metadata" src="'+escapeHTML(url)+'" onclick="event.stopPropagation()"></video>').join("");
+  const photoPreviews=photos.map(url=>'<img class="community-post-media" src="'+escapeHTML(url)+'" alt="'+escapeHTML(post.title)+'" loading="lazy">').join("");
+  const videoPreviews=videos.map(url=>'<video class="community-post-media" controls playsinline preload="metadata" src="'+escapeHTML(url)+'" onclick="event.stopPropagation()"></video>').join("");
   const mediaCount=photos.length+videos.length;
   return '<article class="community-post" role="button" tabindex="0" data-detail-id="'+escapeHTML(String(post.id))+'" onclick="openPlaceDetail(this.dataset.detailId)" onkeydown="if(event.key===\'Enter\'){openPlaceDetail(this.dataset.detailId)}">'+photoPreviews+videoPreviews+
     '<div class="post-meta">'+escapeHTML(post.category||"DISCOVERY")+' · '+escapeHTML(post.location||"")+'</div>'+
@@ -948,8 +1321,86 @@ function communityPostCard(post,own=false){
     (own?'<div class="post-status">'+status+'</div>':"")+(mediaCount?'<p class="small">'+photos.length+' photos · '+videos.length+' videos shared</p>':"")+'</article>';
 }
 
+async function deleteNomPost(postId,button){
+  if(!currentUser){alert("Please log in to delete your post.");return;}
+  if(!postId||!window.confirm("Delete this post? This will permanently remove your post and its attached media."))return;
+  if(button){button.disabled=true;button.textContent="Deleting...";}
+  try{
+    const {data:post,error:checkError}=await supabaseClient.from("nom_posts").select("id").eq("id",postId).eq("user_id",currentUser.id).maybeSingle();
+    if(checkError)throw checkError;
+    if(!post)throw new Error("This post is no longer available or does not belong to your account.");
+    const {data:media,error:mediaError}=await supabaseClient.from("nom_post_media").select("storage_path").eq("post_id",postId).eq("user_id",currentUser.id);
+    if(mediaError)throw mediaError;
+    const {data:deleted,error:deleteError}=await supabaseClient.from("nom_posts").delete().eq("id",postId).eq("user_id",currentUser.id).select("id").maybeSingle();
+    if(deleteError)throw deleteError;
+    if(!deleted)throw new Error("NOM could not confirm deletion. Please refresh and try again.");
+    let cleanupWarning="";
+    const paths=(media||[]).map(item=>item.storage_path).filter(Boolean);
+    if(paths.length){
+      const {error:storageError}=await supabaseClient.storage.from(NOM_COMMUNITY_BUCKET).remove(paths);
+      if(storageError){console.warn("NOM post media cleanup:",storageError);cleanupWarning=" The post was deleted, but some media files may need cleanup.";}
+    }
+    await loadNomPostsFeed();
+    if(cleanupWarning)alert("Your post was deleted."+cleanupWarning);
+  }catch(error){
+    console.error("NOM post deletion:",error);
+    alert("Could not delete this post: "+(error?.message||"Please try again."));
+    if(button){button.disabled=false;button.textContent="Delete post";}
+  }
+}
+
+async function loadNomPostsFeed(){
+  const feed=document.getElementById("nomPostsFeed");
+  if(!feed)return;
+  if(!supabaseClient){feed.innerHTML='<p class="small">NOM Community is temporarily unavailable. Please refresh.</p>';return;}
+  feed.innerHTML='<p class="small">Loading NOM posts...</p>';
+  try{
+    const {data:posts,error}=await supabaseClient.from("nom_posts")
+      .select("id,user_id,body,post_type,place_name,place_location,category,created_at")
+      .eq("status","published").order("created_at",{ascending:false}).limit(40);
+    if(error)throw error;
+    if(!posts?.length){feed.innerHTML='<p class="small">No moments shared yet. Be the first to post to NOM.</p>';return;}
+    const ids=posts.map(post=>post.id),userIds=[...new Set(posts.map(post=>post.user_id))];
+    const mediaResult=await supabaseClient.from("nom_post_media").select("post_id,storage_path,media_type,mime_type").in("post_id",ids).order("created_at",{ascending:true});
+    const media=mediaResult.error?[]:(mediaResult.data||[]);
+    if(mediaResult.error)console.warn("NOM post media:",mediaResult.error.message);
+    let profiles=[];
+    if(currentUser&&userIds.length){
+      const profileResult=await supabaseClient.from("profiles").select("id,username,display_name,avatar_url").in("id",userIds);
+      if(!profileResult.error)profiles=profileResult.data||[];
+      else console.warn("NOM post profiles:",profileResult.error.message);
+    }
+    const profileMap=Object.fromEntries(profiles.map(profile=>[profile.id,profile]));
+    const mediaMap={};
+    media.forEach(item=>{
+      if(!mediaMap[item.post_id])mediaMap[item.post_id]=[];
+      const url=supabaseClient.storage.from(NOM_COMMUNITY_BUCKET).getPublicUrl(item.storage_path).data.publicUrl;
+      mediaMap[item.post_id].push({...item,url});
+    });
+    feed.innerHTML=posts.map(post=>{
+      const profile=profileMap[post.user_id]||{},username=profile.username||profile.display_name||"NOM member";
+      const avatar=nomAvatarMarkup(profile.avatar_url||"",username,true);
+      const mediaHtml=(mediaMap[post.id]||[]).map(item=>{
+        if(item.media_type==="image")return '<img class="nom-post-media" src="'+escapeHTML(item.url)+'" alt="Photo shared on NOM" loading="lazy">';
+        if(item.media_type==="video")return '<video class="nom-post-media" controls playsinline preload="metadata" src="'+escapeHTML(item.url)+'"></video>';
+        if(item.media_type==="audio")return '<audio class="nom-post-audio" controls preload="metadata" src="'+escapeHTML(item.url)+'"></audio>';
+        return "";
+      }).join("");
+      const place=post.place_name?'<div class="post-meta">📍 '+escapeHTML(post.place_name)+(post.place_location?' · '+escapeHTML(post.place_location):"")+'</div>':"";
+      const date=new Date(post.created_at).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"});
+      const ownerActions=currentUser&&currentUser.id===post.user_id?'<div class="nom-post-actions"><button type="button" class="nom-post-delete" data-delete-post="'+escapeHTML(post.id)+'">Delete post</button></div>':"";
+      return '<article class="feed-card nom-post-card"><div class="post-author">'+avatar+'<span>'+escapeHTML(username)+'</span><span class="small"> · '+escapeHTML(date)+'</span></div><div class="post-meta">'+escapeHTML(post.category||"General")+' · '+escapeHTML(post.post_type||"text")+'</div>'+(post.body?'<p class="nom-post-body">'+escapeHTML(post.body)+'</p>':"")+place+mediaHtml+ownerActions+'</article>';
+    }).join("");
+    feed.querySelectorAll("[data-delete-post]").forEach(button=>button.addEventListener("click",()=>deleteNomPost(button.dataset.deletePost,button)));
+  }catch(error){
+    console.error("NOM Community feed:",error);
+    feed.innerHTML='<p class="small">Cannot access NOM Community right now. Please refresh and try again.</p>';
+  }
+}
+
 async function loadCommunityFeed(){
   const feed=document.getElementById("communityFeed"),mine=document.getElementById("myCommunitySubmissions");if(!feed||!mine)return;
+  loadNomPostsFeed();
   const {data:published,error}=await supabaseClient.from("community_posts").select("id,user_id,title,description,location,category,photo_urls,video_urls,username,display_name,status,created_at").eq("status","published").order("created_at",{ascending:false}).limit(40);
   const publishedAvatars=await getNomAvatarMap((published||[]).map(p=>p.user_id));
   (published||[]).forEach(p=>p.avatar_url=publishedAvatars[p.user_id]||"");
@@ -973,6 +1424,50 @@ function getCommunityMediaInfo(file){
   const isVideo=!!videoTypes[ext]||validVideoMimes.includes(contentType);
   const supported=!!contentType&&(isVideo?validVideoMimes.includes(contentType):validImageMimes.includes(contentType));
   return {isVideo,contentType,supported};
+}
+
+let nomCommunityAiSuggestion = "";
+
+async function enhanceCommunityDescription(){
+  const input=document.getElementById("communityDescription");
+  const button=document.getElementById("communityAiEnhance");
+  const message=document.getElementById("communityAiMessage");
+  const preview=document.getElementById("communityAiPreview");
+  const suggestion=document.getElementById("communityAiSuggestion");
+  const text=(input?.value||"").trim();
+  if(!currentUser){message.textContent="Please log in to use NOM AI.";return;}
+  if(!text){message.textContent="Write your place description first.";return;}
+  if(!supabaseClient){message.textContent="NOM AI is temporarily unavailable.";return;}
+  button.disabled=true;button.textContent="✨ Improving your description...";message.textContent="NOM AI is preparing a suggestion...";
+  preview.classList.add("hidden");nomCommunityAiSuggestion="";
+  try{
+    const {data,error}=await supabaseClient.functions.invoke("nom-ai-enhance",{body:{text,style:"travel-story"}});
+    if(error)throw error;
+    if(!data?.enhancedText||typeof data.enhancedText!=="string")throw new Error(data?.error||"NOM AI did not return a suggestion. Please try again.");
+    nomCommunityAiSuggestion=data.enhancedText.trim();
+    suggestion.textContent=nomCommunityAiSuggestion;
+    preview.classList.remove("hidden");
+    message.textContent="Your suggestion is ready. Review it before using it.";
+  }catch(error){
+    console.error("NOM AI enhancement:",error);
+    message.textContent=error?.message||"NOM AI could not complete this request. Please try again.";
+  }finally{
+    button.disabled=false;button.textContent="✨ Enhance with NOM AI";
+  }
+}
+
+function acceptCommunityAiSuggestion(){
+  if(!nomCommunityAiSuggestion)return;
+  document.getElementById("communityDescription").value=nomCommunityAiSuggestion;
+  document.getElementById("communityAiPreview").classList.add("hidden");
+  document.getElementById("communityAiMessage").textContent="Suggestion added to your description. You can still edit it before publishing.";
+  nomCommunityAiSuggestion="";
+}
+
+function dismissCommunityAiSuggestion(){
+  nomCommunityAiSuggestion="";
+  document.getElementById("communityAiPreview").classList.add("hidden");
+  document.getElementById("communityAiMessage").textContent="Your original description is unchanged.";
 }
 
 async function submitCommunityPlace(){
@@ -1006,22 +1501,155 @@ async function submitCommunityPlace(){
   finally{button.disabled=false;button.textContent="Submit place";if(message.textContent.includes("now live")){progressBar.style.width="100%";}else{progress.classList.add("hidden");progressBar.style.width="0%";}}
 }
 
-function toggleSave(id){
-  if(savedIds.includes(id)){
-    savedIds = savedIds.filter(item=>item !== id);
-  }else{
-    savedIds.push(id);
+function getSavedPlaceRecords(){
+ try{
+  const value=JSON.parse(localStorage.getItem("nomSavedPlaces")||"[]");
+  return Array.isArray(value)?value:[];
+ }catch(_){return [];}
+}
+function getGuestSavedIds(){
+ try{
+  const value=JSON.parse(localStorage.getItem("nomSaved")||"[]");
+  return Array.isArray(value)?value.map(String):[];
+ }catch(_){return [];}
+}
+function resetSavedPlacesForGuest(){
+ savedPlacesLoadedUser=null;
+ savedPlacesLoadingUser=null;
+ savedPlaceRecords=[];
+ savedIds=getGuestSavedIds();
+ renderSaved();
+ renderPlaces();
+}
+async function loadSavedPlacesForUser(userId){
+ if(!userId||!supabaseClient)return;
+ if(savedPlacesLoadedUser===userId||savedPlacesLoadingUser===userId)return;
+ savedPlacesLoadingUser=userId;
+ savedIds=[];
+ savedPlaceRecords=[];
+ try{
+  const guestIds=getGuestSavedIds();
+  const guestRecords=getSavedPlaceRecords().filter(place=>guestIds.includes(String(place.id)));
+  if(guestRecords.length){
+   const rows=guestRecords.map(place=>({
+    user_id:userId,
+    place_key:String(place.id),
+    place_data:{...place,id:String(place.id)}
+   }));
+   const {error:migrateError}=await supabaseClient.from("saved_places").upsert(rows,{onConflict:"user_id,place_key",ignoreDuplicates:true});
+   if(migrateError)throw migrateError;
+   localStorage.removeItem("nomSaved");
+   localStorage.removeItem("nomSavedPlaces");
   }
-  localStorage.setItem("nomSaved",JSON.stringify(savedIds));
+  const {data,error}=await supabaseClient
+   .from("saved_places")
+   .select("place_key,place_data,created_at")
+   .eq("user_id",userId)
+   .order("created_at",{ascending:false});
+  if(error)throw error;
+  if(currentUser?.id!==userId)return;
+  savedPlaceRecords=Array.isArray(data)?data:[];
+  savedIds=savedPlaceRecords.map(row=>String(row.place_key));
+  savedPlacesLoadedUser=userId;
+ }catch(error){
+  console.warn("NOM saved places sync:",error.message);
+  savedPlaceRecords=[];
+  savedIds=[];
+ }finally{
+  if(savedPlacesLoadingUser===userId)savedPlacesLoadingUser=null;
+  renderSaved();
+  renderPlaces();
+ }
+}
+async function savePlaceFromDetail(id){
+ const key=String(id);
+ const item=Object.values(nomDetailItems).find(place=>String(place.id)===key);
+ if(!item)return false;
+ const record={...item,id:key,image_url:(item.photos||[])[0]||null,image:(item.photos||[])[0]||null,video_urls:item.videos||[]};
+ const index=places.findIndex(place=>String(place.id)===key);
+ if(index>=0)places[index]={...places[index],...record};
+ else places.push(record);
+ const saved=await toggleSave(key);
+ if(saved)closePlaceDetail();
+ return saved;
+}
+async function saveNomSearchPlace(id){
+ const key=String(id);
+ const item=Object.values(nomDetailItems).find(place=>String(place.id)===key);
+ if(!item)return false;
+ const record={...item,id:key,image_url:(item.photos||[])[0]||null,image:(item.photos||[])[0]||null,video_urls:item.videos||[]};
+ const index=places.findIndex(place=>String(place.id)===key);
+ if(index>=0)places[index]={...places[index],...record};
+ else places.push(record);
+ currentResults=mergePlaceRecords([...currentResults,record]);
+ const saved=await toggleSave(key);
+ renderNOMSearchResults();
+ return saved;
+}
+async function toggleSave(id){
+ id=String(id);
+ if(currentUser&&supabaseClient){
+  const isSaved=savedIds.map(String).includes(id);
+  if(isSaved){
+   const {error}=await supabaseClient.from("saved_places").delete().eq("user_id",currentUser.id).eq("place_key",id);
+   if(error){console.warn("NOM unsave failed:",error.message);alert("Could not remove this saved place. Please try again.");return false;}
+   savedIds=savedIds.filter(item=>String(item)!==id);
+   savedPlaceRecords=savedPlaceRecords.filter(row=>String(row.place_key)!==id);
+  }else{
+   const record=places.find(place=>String(place.id)===id)
+    ||currentResults.find(place=>String(place.id)===id)
+    ||Object.values(nomDetailItems).find(place=>String(place.id)===id);
+   if(!record){alert("Place details are not available yet. Please reopen the place and try again.");return false;}
+   const placeData={...record,id};
+   const {error}=await supabaseClient.from("saved_places").insert({user_id:currentUser.id,place_key:id,place_data:placeData});
+   if(error){console.warn("NOM save failed:",error.message);alert("Could not save this place. Please try again.");return false;}
+   savedIds=[...savedIds.map(String),id];
+   savedPlaceRecords=[{place_key:id,place_data:placeData,created_at:new Date().toISOString()},...savedPlaceRecords.filter(row=>String(row.place_key)!==id)];
+  }
   renderPlaces();
   renderSaved();
-}
+  return true;
+ }
 
+ let records=getSavedPlaceRecords();
+ const guestIds=getGuestSavedIds();
+ if(guestIds.includes(id)){
+  savedIds=guestIds.filter(item=>item!==id);
+  records=records.filter(place=>String(place.id)!==id);
+ }else{
+  const record=places.find(place=>String(place.id)===id)
+   ||currentResults.find(place=>String(place.id)===id)
+   ||Object.values(nomDetailItems).find(place=>String(place.id)===id);
+  if(!record)return false;
+  savedIds=[...guestIds,id];
+  records=records.filter(place=>String(place.id)!==id);
+  records.push({...record,id});
+ }
+ localStorage.setItem("nomSaved",JSON.stringify(savedIds));
+ localStorage.setItem("nomSavedPlaces",JSON.stringify(records));
+ renderPlaces();
+ renderSaved();
+ return true;
+}
 function renderSaved(){
-  const list = places.filter(place=>savedIds.includes(place.id));
-  document.getElementById("savedPlaces").innerHTML = list.length
-    ? list.map(placeCard).join("")
-    : '<p>No saved places yet. Explore NOM and save somewhere you love.</p>';
+ let list=[];
+ if(currentUser){
+  list=savedPlaceRecords.map(row=>({...row.place_data,id:String(row.place_key)}));
+  if(savedPlacesLoadingUser===currentUser.id&&!savedPlacesLoadedUser){
+   document.getElementById("savedPlaces").innerHTML='<p>Loading your saved places...</p>';
+   return;
+  }
+ }else{
+  const stored=getSavedPlaceRecords();
+  const guestIds=getGuestSavedIds();
+  const legacy=places.filter(place=>guestIds.includes(String(place.id)));
+  const byId=new Map();
+  [...legacy,...stored].forEach(place=>byId.set(String(place.id),place));
+  list=[...byId.values()].filter(place=>guestIds.includes(String(place.id)));
+ }
+ document.getElementById("savedPlaces").innerHTML=list.length
+  ?list.map(placeCard).join("")
+  :'<p>No saved places yet. Explore NOM and save somewhere you love.</p>';
 }
 
 /* TRIP PLANNER */
@@ -1125,7 +1753,7 @@ function updateAuthForm(){
 async function handleRegistrationAvatar(input){
   const file=input.files?.[0],preview=document.getElementById("avatarPreview");
   if(!file){preview.classList.add("hidden");preview.removeAttribute("src");return;}
-  if(!["image/jpeg","image/png","image/webp"].includes(file.type)){input.value="";alert("Please choose a JPG, PNG or WebP image.");return;}
+  if(file.type&&!["image/jpeg","image/png","image/webp","image/heic","image/heif","image/avif"].includes(file.type)){input.value="";alert("Please choose a photo image. iPhone HEIC photos are supported when Safari can decode them.");return;}
   if(file.size>8*1024*1024){input.value="";alert("Please choose an image smaller than 8 MB.");return;}
   try{
     const dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error("Could not read that image."));reader.readAsDataURL(file);});
@@ -1263,7 +1891,7 @@ async function submitAuth(){
         email,
         password,
         options:{
-          emailRedirectTo:"https://nommobileapp.github.io/nom-lifestyle-mockup/",
+          emailRedirectTo:"https://nommobileapp.github.io/NOM-Lifestyle-Development/",
           data:{
             display_name:displayName,
             username:username
@@ -1277,9 +1905,13 @@ async function submitAuth(){
         currentUser = data.user;
         message.textContent = "Account created successfully.";
         updateProfile();
-        await uploadPendingRegistrationAvatar(data.user);
+        try{
+          await uploadPendingRegistrationAvatar(data.user);
+        }catch(avatarError){
+          message.textContent = "Your account was created, but the profile picture could not be saved yet. You can try again after signing in: "+(avatarError.message||"Upload failed.");
+        }
       }else{
-        message.textContent = "Registration received. Please confirm your email. Your selected profile picture will be added when you sign in after confirmation.";
+        message.textContent = "Registration received. Please confirm your email. The confirmation link will return you to NOM, where your account and selected profile picture can finish setting up.";
       }
 
     }else{
@@ -1293,7 +1925,11 @@ async function submitAuth(){
       currentUser = data.user;
       message.textContent = "Login successful.";
       updateProfile();
-      await uploadPendingRegistrationAvatar(data.user);
+      try{
+        await uploadPendingRegistrationAvatar(data.user);
+      }catch(avatarError){
+        message.textContent = "You are signed in, but your profile picture could not be saved yet: "+(avatarError.message||"Upload failed.");
+      }
     }
 
   }catch(error){
@@ -1314,6 +1950,7 @@ function updateProfile(){
   if(currentUser){
     profileInfo.classList.add("hidden");
     loggedInPanel.classList.remove("hidden");
+    document.getElementById("logoutMessage").textContent="";
 
     const metadata = currentUser.user_metadata || {};
     const publicUsername = metadata.username ? "@" + metadata.username : "NOM MEMBER";
@@ -1342,6 +1979,7 @@ async function logout(){
     if(error) throw error;
 
     currentUser = null;
+    resetSavedPlacesForGuest();
     updateProfile();
     message.textContent = "You have logged out.";
   }catch(error){
@@ -1349,29 +1987,45 @@ async function logout(){
   }
 }
 
-/* RESTORE LOGIN SESSION */
-async function initialiseApp(){
+/* RESTORE LOGIN SESSION
+   Keep the auth callback synchronous. Defer database and realtime work
+   until after Supabase has finished processing the session event. */
+function initialiseApp(){
   if(!supabaseClient){
     console.error("NOM: Supabase SDK did not load; public navigation remains available.");
     return;
   }
-  try{
-    const {data,error} = await supabaseClient.auth.getSession();
-    if(error) throw error;
 
-    currentUser = data.session ? data.session.user : null;
+  supabaseClient.auth.onAuthStateChange((event,session)=>{
+    if(!["INITIAL_SESSION","SIGNED_IN","SIGNED_OUT","TOKEN_REFRESHED","USER_UPDATED","PASSWORD_RECOVERY"].includes(event))return;
+
+    const previousUserId=currentUser?.id||null;
+    const eventUser=session?.user||null;
+    currentUser=eventUser;
+    const nextUserId=eventUser?.id||null;
+
     updateProfile();
-    if(currentUser){startNomNotificationListener();uploadPendingRegistrationAvatar(currentUser).catch(error=>console.warn("NOM avatar upload:",error.message));}
 
-    supabaseClient.auth.onAuthStateChange((_event,session)=>{
-      const previousUserId=currentUser?.id||null;
-      currentUser = session ? session.user : null;
-      const nextUserId=currentUser?.id||null;
-      updateProfile();
-      if(currentUser){
+    setTimeout(()=>{
+      /* Ignore stale queued work if another auth event has since changed user. */
+      if((currentUser?.id||null)!==nextUserId)return;
+
+      if(eventUser){
+        loadSavedPlacesForUser(eventUser.id);
         startNomNotificationListener();
-        setTimeout(()=>uploadPendingRegistrationAvatar(currentUser).catch(error=>console.warn("NOM avatar upload:",error.message)),0);
-      }else{if(nomNotificationChannel){supabaseClient.removeChannel(nomNotificationChannel);nomNotificationChannel=null;}renderNomUnreadBadges(0);}
+        if(event==="INITIAL_SESSION"||event==="SIGNED_IN"){
+          uploadPendingRegistrationAvatar(eventUser).catch(error=>{
+            console.warn("NOM avatar upload:",error.message);
+            const message=document.getElementById("authMessage");
+            if(message)message.textContent="Your account is active, but the profile picture could not be saved yet. You can retry by signing in again: "+(error.message||"Upload failed.");
+          });
+        }
+      }else{
+        resetSavedPlacesForGuest();
+        if(nomNotificationChannel){supabaseClient.removeChannel(nomNotificationChannel);nomNotificationChannel=null;}
+        renderNomUnreadBadges(0);
+      }
+
       if(previousUserId!==nextUserId){
         const ownMedia=document.getElementById("workPortfolioMedia");
         const publicPanel=document.getElementById("workPublicPortfolio");
@@ -1380,22 +2034,72 @@ async function initialiseApp(){
         if(publicPanel)publicPanel.classList.add("hidden");
         if(publicContent)publicContent.innerHTML="";
         const workPage=document.getElementById("workPage");
-        if(currentUser&&workPage&&!workPage.classList.contains("hidden"))openWork();
-        else if(!currentUser){
+        if(eventUser&&workPage&&!workPage.classList.contains("hidden"))openWork();
+        else if(!eventUser){
           document.getElementById("workMemberGate")?.classList.remove("hidden");
           document.getElementById("workMemberTools")?.classList.add("hidden");
           const directory=document.getElementById("workDirectory");
           if(directory)directory.innerHTML='<p class="small">Join NOM or log in to discover member portfolios.</p>';
         }
       }
-    });
-
-  }catch(error){
-    console.error("NOM authentication:",error.message);
-  }
+    },0);
+  });
 }
 
-/* START NOM */
+
+
+function toggleNomMusicPanel(force){const panel=document.getElementById("nomMusicPanel"),button=document.getElementById("nomMusicToggle");const open=typeof force==="boolean"?force:panel.classList.contains("closed");panel.classList.toggle("closed",!open);button.classList.toggle("active",open);button.setAttribute("aria-label",open?"Close music":"Open music");}
+function parseNomSpotifyLink(value){
+ const raw=String(value||"").trim();if(!raw)return null;
+ let match=raw.match(/^spotify:(track|album|playlist|artist|episode|show):([A-Za-z0-9]+)$/i);
+ if(match)return {type:match[1].toLowerCase(),id:match[2]};
+ try{
+  const url=new URL(raw);
+  if(url.protocol!=="https:"||!/(^|\.)spotify\.com$/i.test(url.hostname))return null;
+  const parts=url.pathname.split("/").filter(Boolean),offset=parts[0]==="embed"?1:0;
+  const type=(parts[offset]||"").toLowerCase(),id=parts[offset+1]||"";
+  if(!["track","album","playlist","artist","episode","show"].includes(type)||!/^[A-Za-z0-9]+$/.test(id))return null;
+  return {type,id};
+ }catch(_){return null;}
+}
+function loadNomSpotifyLink(){
+ const input=document.getElementById("nomSpotifyLink"),message=document.getElementById("nomMusicMessage"),embed=document.getElementById("nomSpotifyEmbed"),audio=document.getElementById("nomMusicAudio"),parsed=parseNomSpotifyLink(input.value);
+ if(!parsed){message.textContent="Paste a valid Spotify track, album, playlist, artist or podcast link.";return;}
+ if(audio){audio.pause();audio.removeAttribute("src");audio.load();audio.style.display="none";}
+ embed.innerHTML='<iframe title="Spotify '+parsed.type+' player" src="https://open.spotify.com/embed/'+parsed.type+'/'+parsed.id+'?theme=0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="eager"></iframe>';
+ message.textContent="Spotify "+parsed.type+" player loaded inside NOM. Tap Play in the player.";toggleNomMusicPanel(true);
+}
+async function loadAppleMusicResults(term){
+ const endpoint=SUPABASE_URL+"/functions/v1/nom-music-search?q="+encodeURIComponent(term),controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),18000);
+ try{
+  const response=await fetch(endpoint,{method:"GET",mode:"cors",cache:"no-store",headers:{Accept:"application/json",apikey:SUPABASE_KEY},signal:controller.signal});
+  let data={};try{data=await response.json();}catch(_){throw new Error("Apple Music search returned an unreadable response.");}
+  if(!response.ok)throw new Error(data.error||("Apple Music search returned HTTP "+response.status));
+  if(!data||!Array.isArray(data.results))throw new Error("Apple Music search returned an unexpected response.");return data.results;
+ }catch(error){if(error.name==="AbortError")throw new Error("Apple Music search timed out.");throw error;}finally{clearTimeout(timeout);}
+}
+async function searchNomMusic(){
+ const input=document.getElementById("nomMusicSearch"),term=(input.value||"").trim(),results=document.getElementById("nomMusicResults"),message=document.getElementById("nomMusicMessage");
+ if(term.length<2){message.textContent="Enter at least two characters to search Apple Music.";return;}
+ results.innerHTML='<p class="small">Searching Apple Music…</p>';message.textContent="Finding Apple Music previews…";
+ try{
+  const data=await loadAppleMusicResults(term),tracks=(data||[]).filter(x=>x.trackName&&x.artistName).map(x=>({...x,source:"apple"}));nomMusicResults=tracks;
+  if(!tracks.length){results.innerHTML='<p class="small">No Apple Music results found. Try another song or artist.</p>';message.textContent="No Apple Music results";return;}
+  results.innerHTML=tracks.map((track,i)=>{
+   const image=track.artworkUrl100||"",imageHTML=image?'<img src="'+escapeHTML(image)+'" alt="" style="width:48px;height:48px;border-radius:8px;object-fit:cover">':'<div style="width:48px;height:48px;border-radius:8px;background:#303234;display:grid;place-items:center">♫</div>';
+   const action='<button type="button" onclick="playNomMusicPreview('+i+')" '+(track.previewUrl?"":"disabled")+'>'+(track.previewUrl?"▶ Preview":"No preview")+'</button>';
+   return '<div class="nom-music-result" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #383838">'+imageHTML+'<div style="min-width:0;flex:1"><strong style="display:block;font-size:13px">'+escapeHTML(track.trackName)+'</strong><span class="small">'+escapeHTML(track.artistName)+(track.collectionName?" · "+escapeHTML(track.collectionName):"")+'</span> <span class="small">APPLE MUSIC</span></div>'+action+'</div>';
+  }).join("");message.textContent=tracks.length+" Apple Music results";
+ }catch(error){results.innerHTML='<p class="small">Apple Music search is temporarily unavailable.</p>';message.textContent=error.message||"Apple Music search failed.";}
+}
+function playNomMusicPreview(index){
+ const track=nomMusicResults[index];if(!track||!track.previewUrl)return;
+ const audio=document.getElementById("nomMusicAudio"),spotify=document.getElementById("nomSpotifyEmbed");
+ if(spotify)spotify.innerHTML="";
+ if(nomMusicAudio&&nomMusicAudio!==audio)nomMusicAudio.pause();
+ nomMusicAudio=audio;audio.src=track.previewUrl;audio.style.display="block";
+ audio.play().then(()=>{document.getElementById("nomMusicMessage").textContent="♫ Previewing "+track.trackName+" — "+track.artistName;}).catch(()=>{document.getElementById("nomMusicMessage").textContent="Tap play on the audio controls to hear this preview.";});
+}
 document.getElementById("homePlaces").innerHTML = '<p class="small">Loading places from NOM...</p>';
 document.getElementById("explorePlaces").innerHTML = '<p class="small">Loading places from NOM...</p>';
 searchPlaces("");
@@ -1404,5 +2108,6 @@ renderTrips();
 initialiseApp();
 </script>
 
+<!-- NOM searchable Audius player deployment refresh -->
 </body>
 </html>
